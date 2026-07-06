@@ -1,0 +1,236 @@
+/* ============================================================
+   GABI'S GAMES — MAIN STYLESHEET 🎀
+   ------------------------------------------------------------
+   💡 HOW TO CHANGE COLORS: edit the variables in :root below.
+   Everything on the site pulls from these, so one change here
+   updates the whole website.
+   ============================================================ */
+
+:root {
+  /* ---- PASTEL PINK PALETTE (change these to re-theme!) ---- */
+  --pink-blush:  #FFE4E9;  /* lightest — page backgrounds        */
+  --pink-soft:   #FFD1DC;  /* main pastel pink                    */
+  --pink-rose:   #FFC0CB;  /* classic pink — buttons/cards        */
+  --pink-deep:   #FF8FA3;  /* accent for hovers/highlights        */
+  --lavender:    #E7D6FF;  /* soft complementary accent           */
+  --mint:        #C9F5E4;  /* soft complementary accent           */
+  --cream:       #FFF9F5;  /* card / panel background             */
+  --ink:         #6B4B57;  /* readable warm brown text (not black)*/
+  --ink-soft:    #9B7F89;  /* secondary text                      */
+  --white:       #FFFFFF;
+
+  /* ---- Typography ---- */
+  --font-head: 'Baloo 2', system-ui, sans-serif;  /* rounded, cute */
+  --font-body: 'Quicksand', system-ui, sans-serif;/* clean, rounded */
+
+  /* ---- Shape & motion ---- */
+  --radius: 22px;
+  --shadow: 0 10px 30px rgba(255, 143, 163, 0.25);
+  --shadow-lift: 0 16px 40px rgba(255, 143, 163, 0.38);
+  --transition: 0.28s cubic-bezier(0.34, 1.56, 0.64, 1); /* springy */
+}
+
+/* ---- RESET ---- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: linear-gradient(160deg, var(--pink-blush) 0%, var(--cream) 55%, var(--lavender) 130%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+h1, h2, h3 { font-family: var(--font-head); font-weight: 700; color: var(--ink); }
+a { color: var(--pink-deep); text-decoration: none; }
+
+/* ============================================================
+   CUTE LOADING ANIMATION (shown until page + assets are ready)
+   ============================================================ */
+#loader {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--pink-blush);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 18px; transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+#loader.hidden { opacity: 0; visibility: hidden; }
+.loader-cube {
+  width: 60px; height: 60px; border-radius: 16px;
+  background: linear-gradient(145deg, #FFE08A, #FFC93C); /* butter yellow */
+  box-shadow: var(--shadow);
+  animation: squishBounce 0.9s infinite;
+  position: relative;
+}
+.loader-cube::before, .loader-cube::after { /* cute eyes */
+  content: ''; position: absolute; top: 22px; width: 8px; height: 8px;
+  background: var(--ink); border-radius: 50%;
+}
+.loader-cube::before { left: 16px; } .loader-cube::after { right: 16px; }
+.loader-text { font-family: var(--font-head); color: var(--pink-deep); font-size: 1.1rem; }
+@keyframes squishBounce {
+  0%,100% { transform: translateY(0) scale(1,1); }
+  30%     { transform: translateY(-24px) scale(0.9,1.1); }
+  55%     { transform: translateY(0) scale(1.15,0.85); } /* squish on land */
+  70%     { transform: translateY(0) scale(1,1); }
+}
+
+/* ============================================================
+   NAVIGATION BAR
+   ============================================================ */
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 6vw;
+  background: rgba(255, 249, 245, 0.82);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(255,143,163,0.15);
+}
+.nav__logo { font-family: var(--font-head); font-size: 1.5rem; color: var(--pink-deep); }
+.nav__links { display: flex; gap: 8px; list-style: none; align-items: center; }
+.nav__links a {
+  padding: 8px 16px; border-radius: 999px; color: var(--ink);
+  font-weight: 600; transition: var(--transition);
+}
+.nav__links a:hover, .nav__links a.active {
+  background: var(--pink-rose); color: var(--white);
+  box-shadow: var(--shadow); transform: translateY(-2px);
+}
+.nav__toggle { display: none; font-size: 1.6rem; background: none; border: none; cursor: pointer; color: var(--pink-deep); }
+
+/* ---- Mute button (top-right, on every page) ---- */
+.mute-btn {
+  border: none; cursor: pointer; font-size: 1.2rem;
+  width: 42px; height: 42px; border-radius: 50%;
+  background: var(--pink-soft); color: var(--ink);
+  transition: var(--transition);
+}
+.mute-btn:hover { transform: scale(1.1) rotate(-8deg); box-shadow: var(--shadow); }
+
+/* ============================================================
+   PAGE TRANSITIONS + fade-in-on-scroll
+   ============================================================ */
+main { animation: pageIn 0.5s ease both; }
+@keyframes pageIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.visible { opacity: 1; transform: none; }
+
+/* ============================================================
+   HERO (Home)
+   ============================================================ */
+.hero {
+  position: relative; text-align: center;
+  padding: 90px 6vw 110px; overflow: hidden;
+}
+.hero h1 { font-size: clamp(2.4rem, 6vw, 4.2rem); line-height: 1.1; }
+.hero h1 .grad {
+  background: linear-gradient(90deg, var(--pink-deep), var(--lavender));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero p { font-size: 1.2rem; color: var(--ink-soft); max-width: 620px; margin: 18px auto 34px; }
+
+/* Floating decorative blobs (pure CSS, GPU-friendly transforms) */
+.float {
+  position: absolute; border-radius: 50%; filter: blur(2px);
+  opacity: 0.7; will-change: transform;
+  animation: floaty 7s ease-in-out infinite;
+}
+.float--1 { width: 90px;  height: 90px;  background: var(--pink-rose);  top: 12%; left: 8%;  }
+.float--2 { width: 130px; height: 130px; background: var(--lavender);   top: 20%; right: 10%; animation-delay: 1.5s; }
+.float--3 { width: 70px;  height: 70px;  background: var(--mint);       bottom: 14%; left: 18%; animation-delay: 3s; }
+@keyframes floaty {
+  0%,100% { transform: translateY(0) translateX(0); }
+  50%     { transform: translateY(-26px) translateX(10px); }
+}
+
+/* Sparkles are injected by main.js and animated here */
+.sparkle {
+  position: absolute; width: 10px; height: 10px; pointer-events: none;
+  background: radial-gradient(circle, #fff 0%, var(--pink-soft) 70%, transparent 72%);
+  border-radius: 50%; opacity: 0; will-change: transform, opacity;
+  animation: twinkle 2.4s ease-in-out infinite;
+}
+@keyframes twinkle {
+  0%,100% { opacity: 0; transform: scale(0.4); }
+  50%     { opacity: 1; transform: scale(1.3); }
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-block; cursor: pointer; border: none;
+  font-family: var(--font-head); font-weight: 700; font-size: 1.05rem;
+  padding: 14px 34px; border-radius: 999px; color: var(--white);
+  background: linear-gradient(135deg, var(--pink-rose), var(--pink-deep));
+  box-shadow: var(--shadow); transition: var(--transition);
+}
+.btn:hover { transform: translateY(-3px) scale(1.04); box-shadow: var(--shadow-lift); }
+.btn:active { transform: translateY(1px) scale(0.98); } /* bouncy press */
+.btn--ghost { background: var(--white); color: var(--pink-deep); }
+
+/* ============================================================
+   GAME CARDS
+   ============================================================ */
+.section { padding: 60px 6vw; }
+.section__title { text-align: center; font-size: clamp(1.8rem, 4vw, 2.6rem); margin-bottom: 8px; }
+.section__sub { text-align: center; color: var(--ink-soft); margin-bottom: 40px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 28px; max-width: 1100px; margin: 0 auto; }
+.card {
+  background: var(--cream); border-radius: var(--radius); overflow: hidden;
+  box-shadow: var(--shadow); transition: var(--transition);
+  border: 2px solid transparent;
+}
+.card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lift); border-color: var(--pink-rose); }
+.card__thumb {
+  height: 170px; display: flex; align-items: center; justify-content: center;
+  font-size: 4.5rem; background: linear-gradient(145deg, var(--pink-soft), var(--lavender));
+}
+.card__body { padding: 22px; }
+.card__body h3 { font-size: 1.3rem; margin-bottom: 6px; }
+.card__body p { color: var(--ink-soft); font-size: 0.96rem; margin-bottom: 16px; min-height: 48px; }
+.badge { display:inline-block; background: var(--mint); color: var(--ink); font-size:0.72rem; font-weight:700; padding:4px 10px; border-radius:999px; margin-bottom:10px; }
+
+/* ============================================================
+   LEADERBOARD TABLE
+   ============================================================ */
+.lb-wrap { max-width: 640px; margin: 0 auto; background: var(--cream); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.lb-tabs { display:flex; gap:6px; justify-content:center; margin: 0 auto 24px; flex-wrap:wrap; }
+.lb-tabs button { border:none; cursor:pointer; padding:8px 18px; border-radius:999px; background:var(--white); color:var(--ink); font-weight:700; font-family:var(--font-body); }
+.lb-tabs button.active { background:var(--pink-rose); color:var(--white); }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 14px 18px; text-align: left; }
+thead { background: var(--pink-rose); color: var(--white); }
+tbody tr:nth-child(even) { background: rgba(255,209,220,0.25); }
+tbody tr:first-child td { font-weight: 700; color: var(--pink-deep); } /* #1 highlight */
+.rank-medal { font-size: 1.1rem; }
+.lb-status { text-align:center; color:var(--ink-soft); padding: 18px; }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer { text-align: center; padding: 40px 6vw; color: var(--ink-soft); font-size: 0.9rem; }
+.footer a { font-weight: 700; }
+
+/* ============================================================
+   ABOUT
+   ============================================================ */
+.about { max-width: 720px; margin: 0 auto; background: var(--cream); padding: 40px; border-radius: var(--radius); box-shadow: var(--shadow); }
+.about p { margin-bottom: 16px; }
+
+/* ============================================================
+   RESPONSIVE (mobile)
+   ============================================================ */
+@media (max-width: 720px) {
+  .nav__toggle { display: block; }
+  .nav__links {
+    position: absolute; top: 68px; right: 6vw; flex-direction: column;
+    background: var(--cream); padding: 14px; border-radius: var(--radius);
+    box-shadow: var(--shadow); display: none;
+  }
+  .nav__links.open { display: flex; }
+}
+/* Respect users who prefer less motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
