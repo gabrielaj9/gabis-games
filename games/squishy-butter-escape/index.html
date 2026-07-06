@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Squishy Butter Escape 🧈 — Gabi's Games</title>
+  <meta name="description" content="Flap the squishy butter cube through dripping slime pillars!">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/styles.css">
+  <style>
+    /* Game-specific layout */
+    .game-stage { display:flex; flex-direction:column; align-items:center; padding: 20px 4vw 50px; }
+    #wrap { position:relative; width:100%; max-width:480px; aspect-ratio: 3/4; }
+    canvas { width:100%; height:100%; border-radius: var(--radius); box-shadow: var(--shadow);
+             background:#FFF0F5; touch-action:none; display:block; }
+    /* Overlay screens (start / pause / game over) */
+    .overlay { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center;
+               justify-content:center; gap:14px; text-align:center; padding:24px;
+               background:rgba(255,228,233,0.92); border-radius:var(--radius); }
+    .overlay.hide { display:none; }
+    .overlay h2 { font-size:1.8rem; }
+    .overlay input { font-family:var(--font-body); font-size:1rem; padding:12px 16px; border-radius:999px;
+                     border:2px solid var(--pink-rose); text-align:center; width:200px; }
+    .mini-lb { list-style:none; font-size:0.9rem; color:var(--ink); background:var(--white);
+               border-radius:14px; padding:12px 18px; box-shadow:var(--shadow); min-width:180px; }
+    .mini-lb li { display:flex; justify-content:space-between; gap:16px; padding:2px 0; }
+    .hud { position:absolute; top:14px; left:0; right:0; text-align:center; font-family:var(--font-head);
+           font-size:2.4rem; color:var(--pink-deep); text-shadow:0 2px 0 #fff; pointer-events:none; }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a class="nav__logo" href="../../index.html">Gabi's Games 🎀</a>
+    <div style="display:flex;align-items:center;gap:12px">
+      <ul class="nav__links">
+        <li><a href="../../index.html">Home</a></li>
+        <li><a href="../../games.html">Games</a></li>
+        <li><a href="../../about.html">About</a></li>
+        <li><a href="../../leaderboard.html">Leaderboard</a></li>
+      </ul>
+      <button class="mute-btn" aria-label="Toggle sound">🔊</button>
+      <button class="nav__toggle" aria-label="Menu">☰</button>
+    </div>
+  </nav>
+
+  <main class="game-stage">
+    <h2 class="section__title">Squishy Butter Escape 🧈</h2>
+    <p class="section__sub">Tap / click / press Space to flap · P or Esc to pause</p>
+
+    <div id="wrap">
+      <canvas id="game"></canvas>
+      <div class="hud" id="hud"></div>
+
+      <!-- START SCREEN -->
+      <div class="overlay" id="screen-start">
+        <h2>Ready, cutie? 💛</h2>
+        <p>What's your name?</p>
+        <input id="name-input" maxlength="12" placeholder="Your name ✨">
+        <button class="btn" id="btn-start">Start! ✨</button>
+      </div>
+
+      <!-- PAUSE SCREEN -->
+      <div class="overlay hide" id="screen-pause">
+        <h2>Paused ⏸️</h2>
+        <button class="btn" id="btn-resume">Resume ▸</button>
+      </div>
+
+      <!-- GAME OVER SCREEN -->
+      <div class="overlay hide" id="screen-over">
+        <h2>Splat! 💥</h2>
+        <p id="over-score">Score: 0</p>
+        <ul class="mini-lb" id="mini-lb"></ul>
+        <button class="btn" id="btn-restart">Play Again 🔁</button>
+        <a class="btn btn--ghost" href="../../leaderboard.html">Full Leaderboard 🏆</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Shared engines first, then the game -->
+  <script src="../../js/config.js"></script>
+  <script src="../../js/audio.js"></script>
+  <script src="../../js/leaderboard.js"></script>
+  <script src="../../js/main.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
