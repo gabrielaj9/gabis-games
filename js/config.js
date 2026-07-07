@@ -14,24 +14,30 @@
 
 /* ---------- GAMES REGISTRY ---------- */
 const GAMES = [
-  {
-    id: "squishy-butter-escape",          // must match the folder name in /games/
-    title: "Squishy Butter Escape",       // shown on cards
-    emoji: "🧈",                           // cute thumbnail (or set thumb: "path.png")
-    thumb: null,                           // optional image path; null = use emoji
-    description: "Help a squishy butter cube flap through dripping slime pillars! How far can you go? 💛",
-    tags: ["Arcade", "Flappy", "Cute"],
+{
+    id: "squishy-butter-escape",
+    title: "Squishy Butter Escape",
+    emoji: "🧈",
+    thumb: null,
+    description: "Help a squishy butter cube flap through dripping slime pillars! How far can you go?",
+    tags: ["Arcade","Flappy","Cute"],
     link: "games/squishy-butter-escape/index.html",
-    featured: true,                        // show on the Home page hero section
-    hasLeaderboard: true                   // this game submits scores
-  }
-  // 👉 ADD YOUR NEXT GAME HERE, e.g.:
-  // ,{
-  //   id: "candy-catch", title: "Candy Catch", emoji: "🍬", thumb: null,
-  //   description: "Catch falling candies before they hit the floor!",
-  //   tags: ["Arcade"], link: "games/candy-catch/index.html",
-  //   featured: false, hasLeaderboard: false
-  // }
+    featured: true,
+    hasLeaderboard: true
+},
+
+{
+    id: "flower-merge",
+    title: "Flower Merge",
+    emoji: "🌸",
+    thumb: null,
+    description: "Merge adorable pastel flowers to grow the ultimate magical bloom!",
+    tags: ["Merge","Relaxing","Cute"],
+    link: "flower-merge.html",
+    featured: true,
+    hasLeaderboard: false
+}
+
 ];
 
 /* ---------- LEADERBOARD CONFIG ---------- */
