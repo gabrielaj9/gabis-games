@@ -165,6 +165,34 @@
     saveSnapshot();
     const oldGrid = cloneGrid(grid);
     const before = JSON.stringify(grid);
+    const result = buildMove(direction);
+    const { next, gained, largestMerge, combo } = result;
+
+    const changed = before !== JSON.stringify(next);
+    if (!changed) {
+      previous = null;
+      undoBtn.disabled = true;
+      checkGameOver();
+      return;
+    }
+
+    grid = next;
+    score += gained;
+    moves++;
+    addRandomTile();
+    if (window.GabiAudio && gained) GabiAudio.sfx.score();
+    render(largestMerge, oldGrid, combo);
+    updateBest();
+    if (!won && largestTile() >= 2048) {
+      won = true;
+      showOverlay("You made 2048!", "Keep merging into higher kawaii friends.", true);
+    } else {
+      checkGameOver();
+    }
+    saveState();
+  }
+
+  function buildMove(direction, source = grid) {
     let gained = 0;
     let largestMerge = 0;
     let combo = false;
@@ -173,10 +201,10 @@
     for (let i = 0; i < size; i++) {
       let line = [];
       for (let j = 0; j < size; j++) {
-        if (direction === "left") line.push(grid[i][j]);
-        if (direction === "right") line.push(grid[i][size - 1 - j]);
-        if (direction === "up") line.push(grid[j][i]);
-        if (direction === "down") line.push(grid[size - 1 - j][i]);
+        if (direction === "left") line.push(source[i][j]);
+        if (direction === "right") line.push(source[i][size - 1 - j]);
+        if (direction === "up") line.push(source[j][i]);
+        if (direction === "down") line.push(source[size - 1 - j][i]);
       }
       const merged = compressLine(line);
       gained += merged.gained;
@@ -191,45 +219,30 @@
       }
     }
 
-    const changed = before !== JSON.stringify(next);
-    if (!changed) {
-      previous = null;
-      undoBtn.disabled = true;
-      return;
-    }
-
-    grid = next;
-    score += gained;
-    moves++;
-    addRandomTile();
-    if (window.GabiAudio && gained) GabiAudio.sfx.score();
-    render(largestMerge, oldGrid, combo);
-    updateBest();
-    if (!won && largestTile() >= 2048) {
-      won = true;
-      showOverlay("You made 2048!", "Keep merging into higher kawaii friends.", true);
-    } else if (!canMove()) {
-      over = true;
-      showOverlay("Board Full", "No more matching friends can move.", false);
-      submitIfEligible();
-    }
-    saveState();
+    return { next, gained, largestMerge, combo };
   }
 
   function largestTile() {
     return Math.max(...grid.flat());
   }
 
-  function canMove() {
-    if (grid.flat().some(v => !v)) return true;
-    for (let r = 0; r < size; r++) {
-      for (let c = 0; c < size; c++) {
-        const v = grid[r][c];
-        if (grid[r + 1] && grid[r + 1][c] === v) return true;
-        if (grid[r][c + 1] === v) return true;
-      }
-    }
-    return false;
+  function isBoardFull() {
+    return grid.every(row => row.every(Boolean));
+  }
+
+  function hasLegalMove() {
+    const before = JSON.stringify(grid);
+    return ["left", "right", "up", "down"].some(direction => {
+      return JSON.stringify(buildMove(direction).next) !== before;
+    });
+  }
+
+  function checkGameOver() {
+    if (!isBoardFull() || hasLegalMove()) return;
+    over = true;
+    showOverlay("Board Full", "No more matching friends can move.", false);
+    submitIfEligible();
+    saveState();
   }
 
   function tileTheme(value) {
