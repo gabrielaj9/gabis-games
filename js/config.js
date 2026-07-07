@@ -13,42 +13,43 @@
    ============================================================ */
 
 /* ---------- GAMES REGISTRY ---------- */
-/* ---------- GAMES REGISTRY ---------- */
 const GAMES = [
-  {
+{
     id: "squishy-butter-escape",
     title: "Squishy Butter Escape",
     emoji: "🧈",
     thumb: null,
     description: "Help a squishy butter cube flap through dripping slime pillars! How far can you go?",
-    tags: ["Arcade", "Flappy", "Cute"],
+    tags: ["Arcade","Flappy","Cute"],
     link: "games/squishy-butter-escape/index.html",
     featured: true,
     hasLeaderboard: true
-  },
-  {
+},
+
+{
     id: "flower-merge",
     title: "Flower Merge",
     emoji: "🌸",
     thumb: null,
     description: "Merge adorable pastel flowers to grow the ultimate magical bloom!",
-    tags: ["Merge", "Relaxing", "Cute"],
+    tags: ["Merge","Relaxing","Cute"],
     link: "games/flower-merge/index.html",
     featured: true,
     hasLeaderboard: false
-  },
-  {
-    id: "slimeria",
-    title: "Slimeria",
-    emoji: "🧪",
-    thumb: null,
-    description: "Run your own dreamy slime shop! Pour glue, mix colors & add cute toppings before patience runs out. 💗",
-    tags: ["Shop", "Kawaii"],
-    link: "games/slimeria/index.html",
-    featured: true,
-    hasLeaderboard: true
-  },
-  {
+}
+,{
+       id: "slimeria",
+       title: "Slimeria",
+       emoji: "🧪",
+       thumb: null,
+       description: "Run your own dreamy slime shop! Pour glue, mix colors & add cute toppings before patience runs out. 💗",
+       tags: ["Shop", "Kawaii"],
+       link: "games/slimeria/index.html",
+       featured: true,
+       hasLeaderboard: true
+     }
+   ,
+{
     id: "frog-kingdom",
     title: "Frog Kingdom",
     emoji: "🐸",
@@ -58,8 +59,8 @@ const GAMES = [
     link: "games/frog-kingdom/index.html",
     featured: true,
     hasLeaderboard: true
-  },
-  {
+}
+   {
     id: "peaceful-pond",
     title: "Peaceful Pond",
     emoji: "🐰",
@@ -69,7 +70,7 @@ const GAMES = [
     link: "games/peaceful-pond/index.html",
     featured: true,
     hasLeaderboard: true
-  }
+}
 ];
 
 /* ---------- LEADERBOARD CONFIG ---------- */
