@@ -5,28 +5,27 @@
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
+  /* ---- Hide the cute loader once everything is ready ---- */
   window.addEventListener("load", () => {
     const l = document.getElementById("loader");
     if (l) setTimeout(() => l.classList.add("hidden"), 500);
   });
 
+  /* ---- Mobile nav toggle ---- */
   const toggle = document.querySelector(".nav__toggle");
   const links = document.querySelector(".nav__links");
-  if (toggle && links) toggle.addEventListener("click", () => links.classList.toggle("open"));
+  if (toggle) toggle.addEventListener("click", () => links.classList.toggle("open"));
 
+  /* ---- Mute button (shared engine, persists via localStorage) ---- */
   const muteBtn = document.querySelector(".mute-btn");
-  if (muteBtn && window.GabiAudio) {
+  if (muteBtn) {
     const paint = () => (muteBtn.textContent = GabiAudio.isMuted() ? "🔇" : "🔊");
     paint();
-    muteBtn.addEventListener("click", () => {
-      GabiAudio.toggleMute();
-      paint();
-      GabiAudio.sfx.click();
-    });
+    muteBtn.addEventListener("click", () => { GabiAudio.toggleMute(); paint(); GabiAudio.sfx.click(); });
   }
 
+  /* ---- Resume audio + start gentle music on first interaction ---- */
   const kick = () => {
-    if (!window.GabiAudio) return;
     GabiAudio.unlock();
     if (!GabiAudio.isMuted()) GabiAudio.startMusic();
     window.removeEventListener("pointerdown", kick);
@@ -35,9 +34,11 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("pointerdown", kick);
   window.addEventListener("keydown", kick);
 
+  /* ---- Play a click sound on every button ---- */
   document.querySelectorAll(".btn, .nav__links a").forEach(b =>
-    b.addEventListener("click", () => window.GabiAudio && GabiAudio.sfx.click()));
+    b.addEventListener("click", () => GabiAudio.sfx.click()));
 
+  /* ---- Sparkles in the hero (created with JS, animated with CSS) ---- */
   const hero = document.querySelector(".hero");
   if (hero) {
     for (let i = 0; i < 14; i++) {
@@ -50,83 +51,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  /* ---- Reveal-on-scroll (IntersectionObserver = performant) ---- */
   const io = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add("visible");
-        io.unobserve(e.target);
-      }
-    });
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("visible"); io.unobserve(e.target); } });
   }, { threshold: 0.15 });
   document.querySelectorAll(".reveal").forEach(el => io.observe(el));
 
+  /* ---- Auto-build game cards from config.js ---- */
   buildCards();
 });
 
-const FALLBACK_GAMES = [
-  {
-    id: "squishy-butter-escape",
-    title: "Squishy Butter Escape",
-    emoji: "🧈",
-    thumb: null,
-    description: "Help a squishy butter cube flap through dripping slime pillars! How far can you go?",
-    tags: ["Arcade", "Flappy", "Cute"],
-    link: "games/squishy-butter-escape/index.html",
-    featured: true,
-    hasLeaderboard: true
-  },
-  {
-    id: "flower-merge",
-    title: "Flower Merge",
-    emoji: "🌸",
-    thumb: null,
-    description: "Merge adorable pastel flowers to grow the ultimate magical bloom!",
-    tags: ["Merge", "Relaxing", "Cute"],
-    link: "games/flower-merge/index.html",
-    featured: true,
-    hasLeaderboard: false
-  },
-  {
-    id: "slimeria",
-    title: "Slimeria",
-    emoji: "🧪",
-    thumb: null,
-    description: "Run your own dreamy slime shop! Pour glue, mix colors & add cute toppings before patience runs out. 💗",
-    tags: ["Shop", "Kawaii"],
-    link: "games/slimeria/index.html",
-    featured: true,
-    hasLeaderboard: true
-  },
-  {
-    id: "frog-kingdom",
-    title: "Frog Kingdom",
-    emoji: "🐸",
-    thumb: null,
-    description: "Build a cozy frog civilization with ponds, lily pads, restaurants, libraries, festivals, and a royal castle.",
-    tags: ["Cozy", "Simulation", "Strategy"],
-    link: "games/frog-kingdom/index.html",
-    featured: true,
-    hasLeaderboard: true
-  },
-  {
-    id: "peaceful-pond",
-    title: "Peaceful Pond",
-    emoji: "🐰",
-    thumb: null,
-    description: "Fish with a sweet bunny in a pastel pond, catch kawaii fish, and upgrade rods, lines, and lures.",
-    tags: ["Fishing", "Cozy", "Kawaii"],
-    link: "games/peaceful-pond/index.html",
-    featured: true,
-    hasLeaderboard: true
-  }
-];
-
 function buildCards() {
-  const GAMES = window.GABI?.GAMES || FALLBACK_GAMES;
-
+  const { GAMES } = window.GABI;
+  // Home page featured grid
   const featWrap = document.getElementById("featured-cards");
   if (featWrap) renderCards(featWrap, GAMES.filter(g => g.featured));
-
+  // Games page — all games
   const allWrap = document.getElementById("all-cards");
   if (allWrap) renderCards(allWrap, GAMES);
 }
@@ -142,10 +82,7 @@ function renderCards(wrap, list) {
         <span class="btn btn--ghost">Play ▸</span>
       </div>
     </a>`).join("");
-
-  const io = new IntersectionObserver(es =>
-    es.forEach(e => e.isIntersecting && e.target.classList.add("visible")),
-    { threshold: 0.1 }
-  );
+  // re-observe the freshly-added reveal elements
+  const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add("visible")), { threshold: 0.1 });
   wrap.querySelectorAll(".reveal").forEach(el => io.observe(el));
 }
