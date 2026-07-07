@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flower Merge — Gabi's Games</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page">
+    <a class="back" href="../../games.html">← Back to Games</a>
+
+    <h1>🌸 Flower Merge 🌸</h1>
+    <p class="subtitle">Launch flowers, merge matching blooms, and grow the cutest pastel garden.</p>
+
+    <section class="game-card">
+      <div class="hud">
+        <div>Score: <span id="score">0</span></div>
+        <div>Next: <span id="next">🌼</span></div>
+        <div>Best: <span id="best">0</span></div>
+      </div>
+
+      <canvas id="game" width="480" height="640"></canvas>
+
+      <p class="instructions">
+        Move your mouse or finger to aim. Click or tap the garden to drop.
+      </p>
+
+      <button id="restart">Restart Garden</button>
+    </section>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>
