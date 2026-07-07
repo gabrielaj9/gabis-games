@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Peaceful Pond — Gabi's Games</title>
+  <meta name="description" content="Fish with a sweet bunny friend in a pastel kawaii pond, catch rare fish, and upgrade your rod, line, and lures.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/styles.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="nav">
+    <a class="nav__logo" href="../../index.html">Gabi's Games 🎀</a>
+    <div style="display:flex;align-items:center;gap:12px">
+      <ul class="nav__links">
+        <li><a href="../../index.html">Home</a></li>
+        <li><a href="../../games.html">Games</a></li>
+        <li><a href="../../about.html">About</a></li>
+        <li><a href="../../leaderboard.html">Leaderboard</a></li>
+      </ul>
+      <button class="mute-btn" aria-label="Toggle sound">🔊</button>
+      <button class="nav__toggle" aria-label="Menu">☰</button>
+    </div>
+  </nav>
+
+  <main class="pond-stage">
+    <h2 class="section__title">Peaceful Pond 🐰🎣</h2>
+    <p class="section__sub">Cast into the pond, hold to reel, and upgrade your cozy fishing kit.</p>
+
+    <div id="pond-wrap">
+      <canvas id="game"></canvas>
+
+      <div class="overlay" id="screen-start">
+        <h2>Peaceful Pond</h2>
+        <p>Catch tiny guppies, grand moon koi, and sparkling rare fish with your bunny angler.</p>
+        <input id="name-input" maxlength="12" placeholder="Your name ✨">
+        <button class="btn" id="btn-start">Start Fishing ✨</button>
+      </div>
+
+      <div class="overlay hide" id="screen-pause">
+        <h2>Paused 🌙</h2>
+        <p>The pond is waiting softly.</p>
+        <button class="btn" id="btn-resume">Resume ▸</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="../../js/config.js"></script>
+  <script src="../../js/audio.js"></script>
+  <script src="../../js/leaderboard.js"></script>
+  <script src="../../js/main.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

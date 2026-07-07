@@ -59,6 +59,17 @@ const GAMES = [
     link: "games/frog-kingdom/index.html",
     featured: true,
     hasLeaderboard: true
+},
+{
+    id: "peaceful-pond",
+    title: "Peaceful Pond",
+    emoji: "🐰",
+    thumb: null,
+    description: "Fish with a sweet bunny in a pastel pond, catch kawaii fish, and upgrade rods, lines, and lures.",
+    tags: ["Fishing", "Cozy", "Kawaii"],
+    link: "games/peaceful-pond/index.html",
+    featured: true,
+    hasLeaderboard: true
 }
 ];
 
