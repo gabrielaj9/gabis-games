@@ -85,14 +85,13 @@ const GAMES = [
   save to the player's own browser (localStorage) only.
 */
 const LEADERBOARD = {
-  ENABLED: true,                    // false = local-only (no online board)
-  BIN_ID:  "PASTE_YOUR_BIN_ID_HERE",
-  MASTER_KEY: "PASTE_YOUR_MASTER_KEY_HERE",
-  API_BASE: "https://api.jsonbin.io/v3/b",
-  MAX_ENTRIES: 100,                 // Top 100 shown
-  // ---- Anti-cheat sanity thresholds (tune per game) ----
-  MAX_PLAUSIBLE_SCORE: 100000,      // reject impossible scores
-  MIN_MS_PER_POINT: 250             // must survive >=0.25s per point earned
+    ENABLED: true,
+    BIN_ID: "6a4c81d4f5f4af5e296a6bcb",
+    MASTER_KEY: "$2a$10$MVzA/PbutT74Y9ZE6uvWqeTysGBit9iFf0srv6SFMl6IEKED6smfm",
+    API_BASE: "https://api.jsonbin.io/v3/b",
+    MAX_ENTRIES: 100,
+    MAX_PLAUSIBLE_SCORE: 100000,
+    MIN_MS_PER_POINT: 250
 };
 
 // Expose to the other scripts
