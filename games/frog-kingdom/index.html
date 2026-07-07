@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Frog Kingdom — Gabi's Games</title>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="frog-page">
+    <a class="back-link" href="../../games.html">← Back to Games</a>
+
+    <h1>🐸 Frog Kingdom 👑</h1>
+    <p class="subtitle">Build ponds, lily pads, bridges, libraries, restaurants, and grow a tiny frog civilization.</p>
+
+    <section class="game-shell">
+      <canvas id="game"></canvas>
+
+      <div id="screen-start" class="screen">
+        <div class="modal">
+          <h2>🐸 Welcome to Frog Kingdom</h2>
+          <p>Grow a kawaii frog civilization with lily pads, gardens, restaurants, and a royal frog castle.</p>
+
+          <input id="name-input" maxlength="16" placeholder="Enter your name" />
+
+          <button id="btn-new">New Kingdom 🌱</button>
+          <button id="btn-continue" class="hide">Continue Kingdom 🐸</button>
+        </div>
+      </div>
+
+      <div id="screen-pause" class="screen hide">
+        <div class="modal">
+          <h2>Paused 🌙</h2>
+          <button id="btn-resume">Resume</button>
+          <button id="btn-reset">Reset Kingdom</button>
+        </div>
+      </div>
+
+      <div id="screen-over" class="screen hide">
+        <div class="modal">
+          <h2 id="over-title">👑 Civilization Achieved!</h2>
+          <p id="over-score">Kingdom Score: 0 🐸</p>
+
+          <h3>Leaderboard</h3>
+          <ol id="mini-lb"></ol>
+
+          <button id="btn-keep">Keep Playing</button>
+        </div>
+      </div>
+    </section>
+
+    <p class="instructions">
+      Tap build buttons at the bottom of the game, then tap the map to place buildings. Tap frogs to meet them.
+    </p>
+  </main>
+
+  <script>
+    window.GabiAudio = window.GabiAudio || {
+      startMusic(){},
+      unlock(){},
+      isMuted(){ return false; },
+      sfx: {
+        score(){},
+        click(){},
+        over(){}
+      }
+    };
+
+    window.GabiLeaderboard = window.GabiLeaderboard || {
+      cleanName(name) {
+        return String(name || "Gabi").trim().slice(0, 16) || "Gabi";
+      },
+      async submit(entry) {
+        const key = "gabi_local_leaderboard_frog_kingdom";
+        const board = JSON.parse(localStorage.getItem(key) || "[]");
+        board.push(entry);
+        board.sort((a, b) => b.score - a.score);
+        localStorage.setItem(key, JSON.stringify(board.slice(0, 20)));
+        return { online: false, board };
+      },
+      async get() {
+        return JSON.parse(localStorage.getItem("gabi_local_leaderboard_frog_kingdom") || "[]");
+      }
+    };
+  </script>
+
+  <script src="game.js"></script>
+</body>
+</html>
