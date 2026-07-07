@@ -307,7 +307,8 @@
         r: info.r,
         merged: false,
         wobble: 0,
-        rotation: Math.random() * 0.4 - 0.2
+        rotation: Math.random() * 0.4 - 0.2,
+age: 0
       });
 
       nextType = randomStartType();
@@ -347,7 +348,7 @@
       combo++;
 
       const gained = info.points * Math.max(1, combo);
-      score += gained;
+      score += Math.round(gained);
       scoreEl.textContent = score;
 
       if (score > best) {
@@ -390,6 +391,7 @@
       if (gameOver || paused) return;
 
       for (const f of flowers) {
+        f.age++;
         f.vy += 0.3;
         f.x += f.vx;
         f.y += f.vy;
@@ -440,7 +442,7 @@
             ) {
               mergeFlowers(i, j);
               mergedThisFrame = true;
-              return;
+              break;
             }
 
             const overlap = minDist - dist;
