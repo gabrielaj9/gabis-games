@@ -484,12 +484,23 @@
 
       floatingTexts = floatingTexts.filter(t => t.life > 0);
 
-      const stackedTooHigh = flowers.some(f => {
-        return f.y - f.r < 90 && Math.abs(f.vy) < 0.35;
-      });
+const settledFlowers = flowers.filter(f => Math.abs(f.vy) < 0.12);
 
-      if (stackedTooHigh && flowers.length > 9) {
-        gameOver = true;
+const stackedTooHigh = settledFlowers.some(f => {
+  return f.y - f.r < 88;
+});
+
+if (stackedTooHigh && flowers.length > 18) {
+  setTimeout(() => {
+    const stillTooHigh = flowers.some(f => {
+      return f.y - f.r < 88 && Math.abs(f.vy) < 0.12;
+    });
+
+    if (stillTooHigh) {
+      gameOver = true;
+    }
+  }, 1200);
+}
       }
     }
 
