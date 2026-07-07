@@ -48,6 +48,18 @@ const GAMES = [
        featured: true,
        hasLeaderboard: true
      }
+   ,
+{
+    id: "frog-kingdom",
+    title: "Frog Kingdom",
+    emoji: "🐸",
+    thumb: null,
+    description: "Build a cozy frog civilization with ponds, lily pads, restaurants, libraries, festivals, and a royal castle.",
+    tags: ["Cozy", "Simulation", "Strategy"],
+    link: "games/frog-kingdom/index.html",
+    featured: true,
+    hasLeaderboard: true
+}
 ];
 
 /* ---------- LEADERBOARD CONFIG ---------- */
