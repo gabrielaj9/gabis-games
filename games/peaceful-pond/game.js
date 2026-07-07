@@ -2,6 +2,7 @@
   const canvas = document.getElementById("game");
   const ctx = canvas.getContext("2d");
   const GAME_ID = "peaceful-pond";
+  const COLLECTION_KEY = "peaceful_pond_collection";
   const W = 900;
   const H = 620;
 
@@ -12,13 +13,20 @@
   const rand = (a, b) => a + Math.random() * (b - a);
 
   const fishTypes = [
-    { name: "Peach Guppy", color: "#ff9fbd", belly: "#ffe4ef", rarity: 1, base: 12, size: [0.55, 0.9] },
-    { name: "Minty Minnow", color: "#75dfba", belly: "#d9fff1", rarity: 1, base: 14, size: [0.55, 0.95] },
-    { name: "Lavender Loach", color: "#b99cff", belly: "#eee8ff", rarity: 1.2, base: 18, size: [0.7, 1.1] },
-    { name: "Pudding Carp", color: "#ffd66e", belly: "#fff3bd", rarity: 1.35, base: 24, size: [0.95, 1.35] },
-    { name: "Cherry Bubblefish", color: "#ff7ba8", belly: "#ffd1e0", rarity: 1.55, base: 34, size: [0.85, 1.35] },
-    { name: "Moon Koi", color: "#f7f1ff", belly: "#ffd9ec", rarity: 2.05, base: 55, size: [1.15, 1.65] },
-    { name: "Starry Dreamfish", color: "#86c8ff", belly: "#fff6b8", rarity: 2.55, base: 82, size: [1.2, 1.85] },
+    { name: "Peach Guppy", color: "#ff9fbd", belly: "#ffe4ef", accent: "#fff3a8", pattern: "freckles", rarity: 1, base: 12, size: [0.55, 0.9] },
+    { name: "Minty Minnow", color: "#75dfba", belly: "#d9fff1", accent: "#a5f7dd", pattern: "scales", rarity: 1, base: 14, size: [0.55, 0.95] },
+    { name: "Cloud Tetra", color: "#9bd8ff", belly: "#eef9ff", accent: "#ffffff", pattern: "clouds", rarity: 1.1, base: 16, size: [0.58, 0.96] },
+    { name: "Lavender Loach", color: "#b99cff", belly: "#eee8ff", accent: "#ffd6f1", pattern: "ribbon", rarity: 1.2, base: 18, size: [0.7, 1.1] },
+    { name: "Honey Finlet", color: "#ffc75f", belly: "#fff2bc", accent: "#ff9fbd", pattern: "scales", rarity: 1.28, base: 21, size: [0.72, 1.08] },
+    { name: "Pudding Carp", color: "#ffd66e", belly: "#fff3bd", accent: "#ffb86f", pattern: "spots", rarity: 1.35, base: 24, size: [0.95, 1.35] },
+    { name: "Cherry Bubblefish", color: "#ff7ba8", belly: "#ffd1e0", accent: "#ffecf4", pattern: "bubbles", rarity: 1.55, base: 34, size: [0.85, 1.35] },
+    { name: "Sugar Pearl Fry", color: "#f9f3ff", belly: "#ffe6f2", accent: "#c7b8ff", pattern: "pearls", rarity: 1.72, base: 42, size: [0.72, 1.18] },
+    { name: "Matcha Ribbon Eel", color: "#9ce8a8", belly: "#e9ffdc", accent: "#74c69d", pattern: "ribbon", rarity: 1.88, base: 48, size: [1.05, 1.55] },
+    { name: "Moon Koi", color: "#f7f1ff", belly: "#ffd9ec", accent: "#d6c5ff", pattern: "spots", rarity: 2.05, base: 55, size: [1.15, 1.65] },
+    { name: "Rosy Lantern Koi", color: "#ffb0c8", belly: "#fff0f5", accent: "#ffd36e", pattern: "lantern", rarity: 2.25, base: 68, size: [1.18, 1.72] },
+    { name: "Starry Dreamfish", color: "#86c8ff", belly: "#fff6b8", accent: "#b59cff", pattern: "stars", rarity: 2.55, base: 82, size: [1.2, 1.85] },
+    { name: "Crystal Wish Koi", color: "#b8f4ff", belly: "#f7fdff", accent: "#ffb7de", pattern: "crystal", rarity: 2.85, base: 105, size: [1.28, 1.92] },
+    { name: "Celestial Mochi Whale", color: "#8aa8ff", belly: "#f1f0ff", accent: "#fff3a8", pattern: "stars", rarity: 3.15, base: 135, size: [1.55, 2.15] },
   ];
 
   const upgrades = {
@@ -42,6 +50,9 @@
   let particles = [];
   let floaters = [];
   let buttons = [];
+  let collection = loadCollection();
+  let stateBeforeDirectory = "start";
+  let catchRevealTimer = null;
   let message = "Tap the pond to cast.";
   let startTime = performance.now();
 
@@ -71,6 +82,175 @@
       line: upgrades.line.level,
       lure: upgrades.lure.level,
     }));
+  }
+
+  function fishId(type) {
+    return type.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  }
+
+  function loadCollection() {
+    try {
+      return JSON.parse(localStorage.getItem(COLLECTION_KEY) || "{}");
+    } catch {
+      return {};
+    }
+  }
+
+  function saveCollection() {
+    localStorage.setItem(COLLECTION_KEY, JSON.stringify(collection));
+  }
+
+  function recordCatch(f, value) {
+    const id = fishId(f.type);
+    const current = collection[id] || { count: 0, biggest: 0, bestValue: 0 };
+    const isNew = !current.count;
+    collection[id] = {
+      count: current.count + 1,
+      biggest: Math.max(current.biggest || 0, +f.size.toFixed(2)),
+      bestValue: Math.max(current.bestValue || 0, value),
+    };
+    saveCollection();
+    renderDirectory();
+    return isNew;
+  }
+
+  function rarityLabel(rarity) {
+    if (rarity >= 2.4) return "Legendary";
+    if (rarity >= 1.9) return "Rare";
+    if (rarity >= 1.45) return "Special";
+    if (rarity >= 1.2) return "Uncommon";
+    return "Common";
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, ch => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    }[ch]));
+  }
+
+  function fishGraphic(type, unlocked) {
+    const body = unlocked ? type.color : "#d8cbd4";
+    const belly = unlocked ? type.belly : "#f3e9ee";
+    const accent = unlocked ? (type.accent || type.belly) : "#c7b9c3";
+    const cheek = unlocked ? "#ff8fb3" : "#c8b6c2";
+    const sparkle = unlocked && type.rarity > 1.8;
+    const mark = unlocked ? "★" : "?";
+    const id = fishId(type);
+    const decorations = {
+      freckles: `
+        <circle cx="52" cy="39" r="2.4" fill="${accent}" opacity="0.86"/>
+        <circle cx="62" cy="34" r="1.9" fill="${accent}" opacity="0.72"/>
+        <circle cx="71" cy="42" r="2.1" fill="${accent}" opacity="0.8"/>
+      `,
+      scales: `
+        <path d="M45 43 q7 -8 14 0 q7 -8 14 0 q7 -8 14 0" fill="none" stroke="${accent}" stroke-width="3" stroke-linecap="round" opacity="0.48"/>
+        <path d="M51 54 q7 -8 14 0 q7 -8 14 0" fill="none" stroke="${accent}" stroke-width="3" stroke-linecap="round" opacity="0.42"/>
+      `,
+      clouds: `
+        <path d="M48 38 q4 -8 11 -2 q5 -7 13 0 q7 -3 10 5 q-12 6 -34 -3z" fill="${accent}" opacity="0.82"/>
+      `,
+      ribbon: `
+        <path d="M41 35 C55 46 67 26 83 39 C71 47 57 60 41 51" fill="none" stroke="${accent}" stroke-width="7" stroke-linecap="round" opacity="0.68"/>
+      `,
+      spots: `
+        <ellipse cx="53" cy="38" rx="7" ry="5" fill="${accent}" opacity="0.72"/>
+        <ellipse cx="74" cy="35" rx="6" ry="4.4" fill="${accent}" opacity="0.62"/>
+        <ellipse cx="66" cy="56" rx="8" ry="5" fill="${accent}" opacity="0.56"/>
+      `,
+      bubbles: `
+        <circle cx="50" cy="39" r="6" fill="${accent}" opacity="0.7"/>
+        <circle cx="70" cy="33" r="4" fill="${accent}" opacity="0.58"/>
+        <circle cx="76" cy="55" r="5" fill="${accent}" opacity="0.62"/>
+        <circle cx="50" cy="39" r="2.2" fill="#ffffff" opacity="0.9"/>
+      `,
+      pearls: `
+        <circle cx="47" cy="38" r="4.5" fill="${accent}" opacity="0.82"/>
+        <circle cx="60" cy="34" r="3.6" fill="${accent}" opacity="0.72"/>
+        <circle cx="73" cy="38" r="4.1" fill="${accent}" opacity="0.76"/>
+        <circle cx="86" cy="48" r="3.4" fill="${accent}" opacity="0.62"/>
+      `,
+      lantern: `
+        <path d="M54 28 q16 10 34 0 q-5 19 -17 30 q-12 -10 -17 -30z" fill="${accent}" opacity="0.42"/>
+        <path d="M61 31 q9 12 19 0 M61 48 q9 -9 19 0" fill="none" stroke="#ffffff" stroke-width="2.5" opacity="0.76"/>
+      `,
+      stars: `
+        <path d="M52 31 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="${accent}" opacity="0.9"/>
+        <path d="M75 46 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z" fill="#ffffff" opacity="0.86"/>
+      `,
+      crystal: `
+        <path d="M52 30 l16 -6 18 12 -7 22 -24 4 -12 -18z" fill="${accent}" opacity="0.5"/>
+        <path d="M52 30 l13 15 l21 -9 M65 45 l-10 17" fill="none" stroke="#ffffff" stroke-width="2.4" opacity="0.8"/>
+      `,
+    }[type.pattern] || "";
+    return `
+      <svg viewBox="0 0 132 96" role="img" aria-label="${escapeHtml(type.name)}">
+        <defs>
+          <linearGradient id="${id}-body" x1="26" y1="22" x2="109" y2="77" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#ffffff" stop-opacity="0.7"/>
+            <stop offset="0.36" stop-color="${body}"/>
+            <stop offset="1" stop-color="${body}" stop-opacity="0.82"/>
+          </linearGradient>
+          <radialGradient id="${id}-belly" cx="66" cy="66" r="40" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#ffffff" stop-opacity="0.88"/>
+            <stop offset="1" stop-color="${belly}"/>
+          </radialGradient>
+          <filter id="${id}-shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#ff8fa3" flood-opacity="0.22"/>
+          </filter>
+        </defs>
+        <g filter="url(#${id}-shadow)">
+          <path d="M24 48 C8 31 7 65 24 48 Z" fill="url(#${id}-body)"/>
+          <path d="M28 44 q-12 -16 -23 -8 q10 4 19 18" fill="${accent}" opacity="0.72"/>
+          <path d="M28 52 q-14 17 -24 8 q10 -4 19 -18" fill="${accent}" opacity="0.72"/>
+          <path d="M64 25 q12 -14 29 -8 q-8 10 -20 19" fill="${accent}" opacity="0.64"/>
+          <path d="M54 73 q14 14 31 4 q-11 -8 -17 -20" fill="${accent}" opacity="0.58"/>
+          <path d="M27 48 C40 21 88 18 111 41 C122 52 115 69 99 75 C72 88 39 74 27 48 Z" fill="url(#${id}-body)"/>
+          <path d="M48 61 C64 76 91 72 102 58 C86 65 64 66 48 61 Z" fill="url(#${id}-belly)" opacity="0.98"/>
+          <path d="M42 29 C60 20 90 24 106 43" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" opacity="0.36"/>
+          ${decorations}
+          <circle cx="89" cy="41" r="7" fill="#573f4a"/>
+          <circle cx="91" cy="38" r="2.6" fill="#ffffff"/>
+          <circle cx="85" cy="39" r="1.5" fill="#ffffff" opacity="0.7"/>
+          <circle cx="98" cy="55" r="4.5" fill="${cheek}" opacity="0.72"/>
+          <path d="M75 51 Q80 56 86 51" fill="none" stroke="#573f4a" stroke-width="3" stroke-linecap="round"/>
+          <path d="M53 31 Q61 22 73 28" fill="none" stroke="${belly}" stroke-width="6" stroke-linecap="round" opacity="0.75"/>
+          <path d="M48 75 Q58 87 72 76" fill="${belly}" opacity="0.72"/>
+          <text x="30" y="29" text-anchor="middle" font-size="16" font-weight="800" fill="#ffffff">${mark}</text>
+          ${sparkle ? `<path d="M112 20 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="${accent}"/>` : ""}
+        </g>
+      </svg>
+    `;
+  }
+
+  function renderDirectory() {
+    const grid = document.getElementById("fish-directory-grid");
+    const summary = document.getElementById("fish-directory-summary");
+    if (!grid || !summary) return;
+    const caught = fishTypes.filter(type => collection[fishId(type)]?.count).length;
+    summary.textContent = `${caught}/${fishTypes.length} pond friends discovered`;
+    grid.innerHTML = fishTypes.map(type => {
+      const id = fishId(type);
+      const entry = collection[id];
+      const unlocked = !!entry?.count;
+      return `
+        <article class="fish-entry${unlocked ? "" : " is-locked"}">
+          <div class="fish-art">${fishGraphic(type, unlocked)}</div>
+          <div>
+            <div class="fish-entry__name">${unlocked ? escapeHtml(type.name) : "Mystery Pond Friend"}</div>
+            <div class="fish-entry__rarity">${unlocked ? rarityLabel(type.rarity) : "Undiscovered"}</div>
+            <div class="fish-entry__stats">
+              <span>Caught: ${unlocked ? entry.count : 0}</span>
+              <span>Biggest: ${unlocked ? `${Number(entry.biggest || 0).toFixed(2)}x` : "???"}</span>
+              <span>Best catch: ${unlocked ? `${Number(entry.bestValue || 0)} pts` : "???"}</span>
+            </div>
+          </div>
+        </article>
+      `;
+    }).join("");
   }
 
   function reset() {
@@ -119,6 +299,9 @@
     state = "playing";
     hide("screen-start");
     hide("screen-pause");
+    hide("screen-directory");
+    hide("screen-catch-reveal");
+    clearCatchRevealTimer();
     GabiAudio.unlock();
     if (!GabiAudio.isMuted()) GabiAudio.startMusic();
   }
@@ -254,6 +437,7 @@
     best = Math.max(best, score);
     localStorage.setItem("peaceful_pond_best", best);
     localStorage.setItem("peaceful_pond_pearls", pearls);
+    const isNew = recordCatch(f, value);
     floaters.push({ x: cast.x, y: cast.y - 35, text: `+${value} ${f.type.name}`, color: f.type.color, life: 1.5 });
     splash(cast.x, cast.y, f.type.color, 42);
     GabiAudio.sfx.score();
@@ -261,7 +445,8 @@
     cast = null;
     hooked = null;
     catchGame = null;
-    state = "playing";
+    state = "reveal";
+    showCatchReveal(f, value, isNew);
 
     const durationMs = performance.now() - startTime;
     await GabiLeaderboard.submit({ name: playerName, score, game: GAME_ID, durationMs });
@@ -630,8 +815,16 @@
     ctx.translate(f.x, f.y);
     const s = 28 * f.size;
     const wiggle = Math.sin(f.phase) * 0.14;
+    const accent = f.type.accent || f.type.belly;
     ctx.rotate(wiggle);
     ctx.scale(-1, 1);
+
+    ctx.fillStyle = accent;
+    ctx.beginPath();
+    ctx.moveTo(s * 0.06, -s * 0.2);
+    ctx.quadraticCurveTo(s * 0.22, -s * 0.78, s * 0.48, -s * 0.42);
+    ctx.quadraticCurveTo(s * 0.3, -s * 0.28, s * 0.06, -s * 0.2);
+    ctx.fill();
 
     ctx.fillStyle = f.type.color;
     ctx.beginPath();
@@ -641,12 +834,20 @@
     ctx.quadraticCurveTo(-s * 0.3, s * 0.68, -s * 0.95, 0);
     ctx.fill();
 
+    ctx.strokeStyle = "rgba(255,255,255,0.45)";
+    ctx.lineWidth = Math.max(1.5, s * 0.055);
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.56, -s * 0.34);
+    ctx.quadraticCurveTo(-s * 0.18, -s * 0.56, s * 0.34, -s * 0.28);
+    ctx.stroke();
+
     ctx.fillStyle = f.type.belly;
     ctx.beginPath();
     ctx.ellipse(-s * 0.18, s * 0.12, s * 0.45, s * 0.2, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = f.type.color;
+    ctx.fillStyle = accent;
     ctx.beginPath();
     ctx.moveTo(s * 0.58, 0);
     ctx.lineTo(s * 1.1, -s * 0.44 + Math.sin(f.phase * 2) * 4);
@@ -655,9 +856,41 @@
     ctx.closePath();
     ctx.fill();
 
+    ctx.globalAlpha *= 0.72;
+    ctx.fillStyle = accent;
+    if (f.type.pattern === "spots" || f.type.pattern === "bubbles" || f.type.pattern === "pearls") {
+      ctx.beginPath();
+      ctx.ellipse(-s * 0.18, -s * 0.18, s * 0.12, s * 0.08, 0, 0, Math.PI * 2);
+      ctx.ellipse(s * 0.1, -s * 0.03, s * 0.1, s * 0.07, 0, 0, Math.PI * 2);
+      ctx.ellipse(-s * 0.03, s * 0.22, s * 0.12, s * 0.07, 0, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (f.type.pattern === "stars" || f.type.pattern === "crystal") {
+      star(-s * 0.15, -s * 0.18, s * 0.12, 5);
+      ctx.fill();
+      star(s * 0.18, s * 0.08, s * 0.08, 5);
+      ctx.fill();
+    } else {
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = Math.max(1.2, s * 0.045);
+      ctx.beginPath();
+      ctx.arc(-s * 0.28, -s * 0.02, s * 0.16, -0.9, 0.9);
+      ctx.arc(-s * 0.02, 0, s * 0.15, -0.9, 0.9);
+      ctx.arc(s * 0.22, 0, s * 0.13, -0.9, 0.9);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = alpha;
+
     ctx.fillStyle = "#6b4b57";
     ctx.beginPath();
     ctx.arc(-s * 0.57, -s * 0.13, Math.max(2.5, s * 0.075), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.arc(-s * 0.59, -s * 0.16, Math.max(1, s * 0.026), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,143,179,0.68)";
+    ctx.beginPath();
+    ctx.ellipse(-s * 0.74, s * 0.02, s * 0.08, s * 0.045, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = "#6b4b57";
     ctx.lineWidth = 1.5;
@@ -730,6 +963,15 @@
 
     panel(300, 20, 300, 64);
     text(message, 450, 58, 18, "#6b4b57", "center");
+
+    roundRect(352, 94, 196, 38, 19);
+    ctx.fillStyle = "#fff8fb";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255, 143, 163, 0.72)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    text("Fish Directory", 450, 119, 17, "#ff6f9d", "center");
+    buttons.push({ action: "directory", x: 352, y: 94, w: 196, h: 38 });
   }
 
   function drawCatchMeter() {
@@ -938,6 +1180,10 @@
     pointer = { ...p, down: true, active: true };
     const hitBtn = buttons.find(b => p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h);
     if (hitBtn && state === "playing" && !cast) {
+      if (hitBtn.action === "directory") {
+        openDirectory();
+        return;
+      }
       buyUpgrade(hitBtn.key);
       return;
     }
@@ -967,6 +1213,10 @@
       pointer.down = true;
       e.preventDefault();
     }
+    if (e.key === "Escape" && state === "reveal") {
+      closeCatchReveal();
+      return;
+    }
     if (e.key.toLowerCase() === "p" || e.key === "Escape") togglePause();
   });
   window.addEventListener("keyup", e => {
@@ -974,12 +1224,63 @@
   });
 
   function togglePause() {
+    if (state === "reveal") {
+      closeCatchReveal();
+      return;
+    }
+    if (!document.getElementById("screen-directory").classList.contains("hide")) {
+      closeDirectory();
+      return;
+    }
     if (state === "playing" || state === "catching") {
       state = "paused";
       show("screen-pause");
     } else if (state === "paused") {
       state = catchGame ? "catching" : "playing";
       hide("screen-pause");
+    }
+  }
+
+  function showCatchReveal(f, value, isNew) {
+    const eyebrow = document.getElementById("catch-reveal-eyebrow");
+    const art = document.getElementById("catch-reveal-fish");
+    const name = document.getElementById("catch-reveal-name");
+    const details = document.getElementById("catch-reveal-details");
+    eyebrow.textContent = isNew ? "New pond friend!" : "Another sweet catch!";
+    art.innerHTML = fishGraphic(f.type, true);
+    name.textContent = f.type.name;
+    details.textContent = `${fishSizeName(f.size)} • ${rarityLabel(f.type.rarity)} • ${value} points`;
+    show("screen-catch-reveal");
+    clearCatchRevealTimer();
+    catchRevealTimer = window.setTimeout(closeCatchReveal, 2000);
+  }
+
+  function closeCatchReveal() {
+    clearCatchRevealTimer();
+    hide("screen-catch-reveal");
+    if (state === "reveal") state = "playing";
+  }
+
+  function clearCatchRevealTimer() {
+    if (!catchRevealTimer) return;
+    window.clearTimeout(catchRevealTimer);
+    catchRevealTimer = null;
+  }
+
+  function openDirectory() {
+    stateBeforeDirectory = state;
+    if (state === "playing" || state === "catching") state = "paused";
+    renderDirectory();
+    hide("screen-pause");
+    show("screen-directory");
+  }
+
+  function closeDirectory() {
+    hide("screen-directory");
+    if (stateBeforeDirectory === "playing" || stateBeforeDirectory === "catching") {
+      state = catchGame ? "catching" : "playing";
+    } else {
+      state = stateBeforeDirectory;
     }
   }
 
@@ -993,4 +1294,8 @@
 
   document.getElementById("btn-start").addEventListener("click", startGame);
   document.getElementById("btn-resume").addEventListener("click", togglePause);
+  document.getElementById("btn-open-directory-start").addEventListener("click", openDirectory);
+  document.getElementById("btn-close-directory").addEventListener("click", closeDirectory);
+  document.getElementById("btn-close-catch-reveal").addEventListener("click", closeCatchReveal);
+  renderDirectory();
 })();

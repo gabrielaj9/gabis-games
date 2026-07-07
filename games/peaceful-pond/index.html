@@ -38,12 +38,34 @@
         <p>Catch tiny guppies, grand moon koi, and sparkling rare fish with your bunny angler.</p>
         <input id="name-input" maxlength="12" placeholder="Your name ✨">
         <button class="btn" id="btn-start">Start Fishing ✨</button>
+        <button class="btn btn-soft" id="btn-open-directory-start">Fish Directory</button>
       </div>
 
       <div class="overlay hide" id="screen-pause">
         <h2>Paused 🌙</h2>
         <p>The pond is waiting softly.</p>
         <button class="btn" id="btn-resume">Resume ▸</button>
+      </div>
+
+      <div class="overlay hide catch-reveal" id="screen-catch-reveal">
+        <div class="catch-card">
+          <p class="catch-card__eyebrow" id="catch-reveal-eyebrow">New pond friend!</p>
+          <div class="catch-card__fish" id="catch-reveal-fish"></div>
+          <h2 id="catch-reveal-name">Peach Guppy</h2>
+          <p id="catch-reveal-details">Cute catch details</p>
+          <button class="btn" id="btn-close-catch-reveal">Keep Fishing</button>
+        </div>
+      </div>
+
+      <div class="overlay hide fish-book" id="screen-directory">
+        <div class="fish-book__header">
+          <div>
+            <h2>Fish Directory</h2>
+            <p id="fish-directory-summary">Discover every cozy pond friend.</p>
+          </div>
+          <button class="btn fish-book__close" id="btn-close-directory">Close</button>
+        </div>
+        <div class="fish-directory-grid" id="fish-directory-grid"></div>
       </div>
     </div>
   </main>
