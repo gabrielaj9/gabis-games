@@ -37,7 +37,17 @@ const GAMES = [
     featured: true,
     hasLeaderboard: false
 }
-
+,{
+       id: "slimeria",
+       title: "Slimeria",
+       emoji: "🧪",
+       thumb: null,
+       description: "Run your own dreamy slime shop! Pour glue, mix colors & add cute toppings before patience runs out. 💗",
+       tags: ["Shop", "Kawaii"],
+       link: "games/slimeria/index.html",
+       featured: true,
+       hasLeaderboard: true
+     }
 ];
 
 /* ---------- LEADERBOARD CONFIG ---------- */
