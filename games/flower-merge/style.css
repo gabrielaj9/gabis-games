@@ -58,6 +58,27 @@ h1 {
   padding: 12px;
 }
 
+.name-label {
+  display: grid;
+  gap: 6px;
+  width: min(100%, 330px);
+  margin: 0 auto 12px;
+  color: #9b5c83;
+  font-weight: 700;
+}
+
+.name-label input {
+  border: 3px solid #ffb8dc;
+  border-radius: 999px;
+  padding: 12px 16px;
+  color: #7b3f61;
+  background: #fff8fc;
+  font: inherit;
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+}
+
 canvas {
   width: 100%;
   max-width: 480px;
@@ -78,4 +99,38 @@ button {
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
+}
+
+.mini-board {
+  margin: 16px auto 0;
+  padding: 14px;
+  background: rgba(255, 240, 248, 0.86);
+  border: 3px solid #ffb8dc;
+  border-radius: 24px;
+  text-align: left;
+}
+
+.mini-board h2 {
+  margin: 0 0 8px;
+  color: #d94f9d;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.mini-board ol {
+  margin: 0;
+  padding-left: 24px;
+}
+
+.mini-board li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px dashed rgba(217, 79, 157, 0.22);
+  font-weight: 700;
+}
+
+.mini-board li:last-child {
+  border-bottom: 0;
 }

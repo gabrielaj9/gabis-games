@@ -5,11 +5,14 @@ const scoreEl = document.getElementById("score");
 const bestEl = document.getElementById("best");
 const nextEl = document.getElementById("next");
 const restartBtn = document.getElementById("restart");
+const nameInput = document.getElementById("player-name");
+const leaderboardList = document.getElementById("leaderboard-list");
 
 const W = canvas.width;
 const H = canvas.height;
 const FLOOR = H - 10;
 const DANGER_LINE = 95;
+const GAME_ID = "flower-merge";
 
 const TYPES = [
   { emoji: "🌼", r: 22, points: 5 },
@@ -19,21 +22,31 @@ const TYPES = [
   { emoji: "🌹", r: 52, points: 170 },
   { emoji: "🌻", r: 63, points: 360 },
   { emoji: "💐", r: 76, points: 800 },
-  { emoji: "🌳", r: 90, points: 1700 },
-  { emoji: "✨", r: 106, points: 4000 }
+  { emoji: "🌳", r: 88, points: 1700 },
+  { emoji: "✨", r: 99, points: 4000 },
+  { emoji: "🌙", r: 109, points: 9000 },
+  { emoji: "⭐", r: 119, points: 20000 },
+  { emoji: "🪐", r: 130, points: 45000 },
+  { emoji: "🌌", r: 142, points: 100000 },
+  { emoji: "☄️", r: 154, points: 240000 }
 ];
 
 let flowers = [];
 let score = 0;
 let best = Number(localStorage.getItem("flowerMergeBest") || 0);
+let playerName = localStorage.getItem("gabi_player_name") || "";
 let nextType = randType();
 let aimX = W / 2;
 let canDrop = true;
 let gameOver = false;
 let dangerFrames = 0;
+let submitted = false;
+let runStart = performance.now();
 
 bestEl.textContent = best;
 nextEl.textContent = TYPES[nextType].emoji;
+nameInput.value = playerName;
+renderLeaderboard();
 
 function randType() {
   return Math.floor(Math.random() * 3);
@@ -50,11 +63,17 @@ function restart() {
   canDrop = true;
   gameOver = false;
   dangerFrames = 0;
+  submitted = false;
+  runStart = performance.now();
   scoreEl.textContent = score;
   nextEl.textContent = TYPES[nextType].emoji;
 }
 
 restartBtn.addEventListener("click", restart);
+nameInput.addEventListener("input", () => {
+  playerName = nameInput.value.trim();
+  localStorage.setItem("gabi_player_name", playerName);
+});
 
 function updateAim(clientX) {
   const rect = canvas.getBoundingClientRect();
@@ -212,19 +231,80 @@ function merge(i, j) {
 }
 
 function checkGameOver() {
-  const tooHigh = flowers.some(f => {
-    return f.age > 180 && Math.abs(f.vy) < 0.08 && f.y - f.r < DANGER_LINE;
+  const tooHigh = flowers.some(f => f.age > 90 && f.y - f.r < DANGER_LINE);
+  const settledTooHigh = flowers.some(f => {
+    const slow = Math.abs(f.vy) < 0.5 && Math.abs(f.vx) < 0.5;
+    return f.age > 45 && slow && f.y - f.r < DANGER_LINE + 12;
   });
 
-  if (tooHigh && flowers.length > 20) {
-    dangerFrames++;
+  if (tooHigh || settledTooHigh) {
+    dangerFrames += settledTooHigh ? 2 : 1;
   } else {
-    dangerFrames = Math.max(0, dangerFrames - 3);
+    dangerFrames = Math.max(0, dangerFrames - 2);
   }
 
-  if (dangerFrames > 120) {
-    gameOver = true;
+  if (dangerFrames > 90) {
+    finishGame();
   }
+}
+
+function finishGame() {
+  if (gameOver) return;
+  gameOver = true;
+  submitScore();
+}
+
+async function submitScore() {
+  if (submitted || !window.GabiLeaderboard) return;
+  submitted = true;
+  const durationMs = Math.max(performance.now() - runStart, score * 8);
+  const result = await GabiLeaderboard.submit({
+    name: playerName || nameInput.value || "Cutie",
+    score,
+    game: GAME_ID,
+    durationMs
+  });
+  if (!result.ok) {
+    saveLocalFlowerScore();
+  }
+  renderLeaderboard();
+}
+
+function saveLocalFlowerScore() {
+  const key = "flower_merge_backup_scores";
+  const board = JSON.parse(localStorage.getItem(key) || "[]");
+  board.push({ name: playerName || "Cutie", score, date: new Date().toISOString() });
+  board.sort((a, b) => b.score - a.score);
+  localStorage.setItem(key, JSON.stringify(board.slice(0, 10)));
+}
+
+async function renderLeaderboard() {
+  if (!leaderboardList) return;
+  let board = [];
+  if (window.GabiLeaderboard) {
+    try {
+      board = await GabiLeaderboard.get(GAME_ID);
+    } catch {
+      board = [];
+    }
+  }
+  if (!board.length) {
+    board = JSON.parse(localStorage.getItem("flower_merge_backup_scores") || "[]");
+  }
+  leaderboardList.innerHTML = board.slice(0, 5).map((row, i) => {
+    const medal = ["🥇", "🥈", "🥉"][i] || `${i + 1}.`;
+    return `<li><span>${medal} ${escapeHtml(row.name || "Cutie")}</span><span>${Math.floor(row.score)}</span></li>`;
+  }).join("") || "<li>No scores yet — grow the first cosmic bloom!</li>";
+}
+
+function escapeHtml(text) {
+  return String(text).replace(/[&<>"']/g, ch => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "'": "&#039;"
+  })[ch]);
 }
 
 function draw() {
@@ -278,6 +358,8 @@ function draw() {
 
     ctx.font = "22px Trebuchet MS";
     ctx.fillText("Final Score: " + score, W / 2, H / 2 + 5);
+    ctx.font = "17px Trebuchet MS";
+    ctx.fillText(submitted ? "Saved to the leaderboard!" : "Saving score...", W / 2, H / 2 + 38);
   }
 }
 

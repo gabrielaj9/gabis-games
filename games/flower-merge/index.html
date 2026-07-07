@@ -20,6 +20,11 @@
         <div>Best: <span id="best">0</span></div>
       </div>
 
+      <label class="name-label">
+        Name for leaderboard
+        <input id="player-name" maxlength="12" placeholder="Cutie" />
+      </label>
+
       <canvas id="game" width="480" height="640"></canvas>
 
       <p class="instructions">
@@ -27,9 +32,17 @@
       </p>
 
       <button id="restart">Restart Garden</button>
+      <div class="mini-board" id="mini-board">
+        <h2>Flower Merge Leaders 🏆</h2>
+        <ol id="leaderboard-list">
+          <li>No scores yet — grow the first cosmic bloom!</li>
+        </ol>
+      </div>
     </section>
   </main>
 
+  <script src="../../js/config.js"></script>
+  <script src="../../js/leaderboard.js"></script>
   <script src="game.js"></script>
 </body>
 </html>

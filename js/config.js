@@ -35,7 +35,7 @@ const GAMES = [
     tags: ["Merge","Relaxing","Cute"],
     link: "games/flower-merge/index.html",
     featured: true,
-    hasLeaderboard: false
+    hasLeaderboard: true
 }
 ,{
        id: "slimeria",

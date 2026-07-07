@@ -29,11 +29,13 @@ const GabiLeaderboard = (() => {
   }
 
   /* ---------- ANTI-CHEAT SANITY CHECKS ---------- */
-  function isPlausible(score, durationMs) {
+  function isPlausible(score, durationMs, game) {
     if (!Number.isFinite(score) || score < 0) return false;
-    if (score > cfg.MAX_PLAUSIBLE_SCORE) return false;
+    const maxScore = game === "flower-merge" ? 2000000 : cfg.MAX_PLAUSIBLE_SCORE;
+    const minMsPerPoint = game === "flower-merge" ? 6 : cfg.MIN_MS_PER_POINT;
+    if (score > maxScore) return false;
     // Must have survived a minimum time per point (stops instant huge scores)
-    if (score > 0 && durationMs < score * cfg.MIN_MS_PER_POINT) return false;
+    if (score > 0 && durationMs < score * minMsPerPoint) return false;
     return true;
   }
   // Light obfuscation of the payload (deters casual tampering only, NOT security)
@@ -86,7 +88,7 @@ const GabiLeaderboard = (() => {
   // Submit a score. Returns { ok, online, board }.
   async function submit({ name, score, game, durationMs }) {
     name = cleanName(name);
-    if (!isPlausible(score, durationMs)) return { ok: false, reason: "sanity" };
+    if (!isPlausible(score, durationMs, game)) return { ok: false, reason: "sanity" };
     if (!rateOk()) return { ok: false, reason: "rate" };
 
     const entry = { name, score: Math.floor(score), game, date: new Date().toISOString() };
