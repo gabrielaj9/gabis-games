@@ -33,7 +33,7 @@ const GAMES = [
     thumb: null,
     description: "Merge adorable pastel flowers to grow the ultimate magical bloom!",
     tags: ["Merge","Relaxing","Cute"],
-    link: "flower-merge.html",
+    link: "games/flower-merge/index.html",
     featured: true,
     hasLeaderboard: false
 }
