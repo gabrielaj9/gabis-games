@@ -1,0 +1,81 @@
+* {
+  box-sizing: border-box;
+  user-select: none;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Trebuchet MS", Arial, sans-serif;
+  color: #7b3f61;
+  background: linear-gradient(135deg, #ffe6f3, #fff7fb, #ffd6ec);
+  text-align: center;
+}
+
+.page {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.back {
+  color: #d94f9d;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+h1 {
+  font-size: clamp(2.4rem, 8vw, 4.2rem);
+  margin: 10px 0;
+  color: #e45fa8;
+  text-shadow: 2px 2px white;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+}
+
+.game-card {
+  background: rgba(255, 255, 255, 0.75);
+  border: 4px solid #ffc5e3;
+  border-radius: 34px;
+  padding: 16px;
+  box-shadow: 0 20px 45px rgba(219, 72, 148, 0.24);
+}
+
+.hud {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+  font-weight: bold;
+}
+
+.hud div {
+  background: #fff0f8;
+  border: 3px solid #ffb8dc;
+  border-radius: 999px;
+  padding: 12px;
+}
+
+canvas {
+  width: 100%;
+  max-width: 480px;
+  height: 640px;
+  background: linear-gradient(#fff8fc, #ffe1f1);
+  border: 6px solid #f9a8d4;
+  border-radius: 32px;
+  cursor: pointer;
+  touch-action: none;
+}
+
+button {
+  border: none;
+  background: linear-gradient(135deg, #ff85c8, #ffb3dc);
+  color: white;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
