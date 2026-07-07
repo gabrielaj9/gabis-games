@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flower Merge — Gabi's Games</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, #fff7fb, transparent 30%),
+        radial-gradient(circle at bottom right, #ffc7e5, transparent 35%),
+        linear-gradient(135deg, #ffe6f3, #fff7fb, #ffd6ec);
+      color: #7b3f61;
+      text-align: center;
+      overflow-x: hidden;
+    }
+
+    .petal {
+      position: fixed;
+      top: -40px;
+      font-size: 24px;
+      opacity: 0.65;
+      animation: fall linear infinite;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-60px) rotate(0deg);
+      }
+      100% {
+        transform: translateY(110vh) rotate(360deg);
+      }
+    }
+
+    header {
+      position: relative;
+      z-index: 5;
+      padding: 18px;
+      background: rgba(255,255,255,.65);
+      backdrop-filter: blur(12px);
+      border-bottom: 3px solid #ffc2df;
+      box-shadow: 0 8px 25px rgba(255, 130, 185, .25);
+    }
+
+    header a {
+      color: #d94f9d;
+      text-decoration: none;
+      font-weight: bold;
+      margin: 0 12px;
+    }
+
+    h1 {
+      margin: 18px 0 4px;
+      font-size: clamp(2rem, 6vw, 3rem);
+      color: #e45fa8;
+      text-shadow: 2px 2px #fff;
+    }
+
+    .subtitle {
+      margin: 0 0 12px;
+      font-size: 1rem;
+    }
+
+    .game-wrap {
+      position: relative;
+      z-index: 4;
+      max-width: 560px;
+      margin: 18px auto 40px;
+      padding: 18px;
+      border-radius: 32px;
+      background: rgba(255,255,255,.72);
+      border: 3px solid #ffc5e3;
+      box-shadow: 0 20px 45px rgba(219, 72, 148, .24);
+    }
+
+    .hud {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+      font-weight: bold;
+    }
+
+    .pill {
+      background: #fff0f8;
+      border: 2px solid #ffb8dc;
+      border-radius: 999px;
+      padding: 9px 10px;
+      box-shadow: inset 0 -3px #ffd6ec;
+    }
+
+    .next-preview {
+      font-size: 1.4rem;
+    }
+
+    canvas {
+      width: 100%;
+      max-width: 500px;
+      height: 650px;
+      background:
+        radial-gradient(circle at top, rgba(255,255,255,.95), rgba(255,239,248,.85)),
+        linear-gradient(#fff8fc, #ffe1f1);
+      border: 5px solid #f9a8d4;
+      border-radius: 30px;
+      box-shadow:
+        inset 0 0 28px rgba(255, 134, 194, .28),
+        0 10px 28px rgba(221, 91, 160, .18);
+      cursor: pointer;
+      touch-action: none;
+    }
+
+    .controls {
+      margin-top: 12px;
+      font-size: .95rem;
+      line-height: 1.5;
+    }
+
+    .button-row {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    button {
+      border: none;
+      background: linear-gradient(135deg, #ff85c8, #ffb3dc);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 999px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(219, 72, 148, .3);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+    }
+
+    .small {
+      font-size: .85rem;
+      opacity: .85;
+    }
+
+    @media (max-width: 600px) {
+      .game-wrap {
+        margin: 10px;
+        padding: 12px;
+      }
+
+      .hud {
+        grid-template-columns: 1fr;
+      }
+
+      canvas {
+        height: 580px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <a href="index.html">Gabi's Games</a>
+    <a href="games.html">Games</a>
+    <a href="leaderboard.html">Leaderboard</a>
+  </header>
+
+  <main>
+    <h1>🌸 Flower Merge 🌸</h1>
+    <p class="subtitle">Launch matching flowers and grow the dreamiest pastel garden.</p>
+
+    <section class="game-wrap">
+      <div class="hud">
+        <div class="pill">Score: <span id="score">0</span></div>
+        <div class="pill">Next: <span id="nextFlower" class="next-preview">🌼</span></div>
+        <div class="pill">Best: <span id="best">0</span></div>
+      </div>
+
+      <canvas id="game" width="500" height="650"></canvas>
+
+      <div class="controls">
+        Move your mouse or finger to aim. Click or tap to drop.  
+        Match two of the same flower to merge into a bigger bloom.
+        <div class="small">Try to unlock the magical final flower ✨</div>
+      </div>
+
+      <div class="button-row">
+        <button onclick="restartGame()">Restart Garden</button>
+        <button onclick="toggleSound()">Sound: <span id="soundLabel">On</span></button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+
+    const scoreEl = document.getElementById("score");
+    const bestEl = document.getElementById("best");
+    const nextFlowerEl = document.getElementById("nextFlower");
+    const soundLabel = document.getElementById("soundLabel");
+
+    const W = canvas.width;
+    const H = canvas.height;
+
+    const flowerTypes = [
+      { emoji: "🌼", name: "Daisy", r: 21, points: 5 },
+      { emoji: "🌸", name: "Cherry Blossom", r: 27, points: 15 },
+      { emoji: "🌷", name: "Tulip", r: 33, points: 35 },
+      { emoji: "🌺", name: "Hibiscus", r: 40, points: 75 },
+      { emoji: "🌹", name: "Rose", r: 48, points: 150 },
+      { emoji: "🌻", name: "Sunflower", r: 58, points: 320 },
+      { emoji: "💐", name: "Bouquet", r: 70, points: 700 },
+      { emoji: "🌳", name: "Bloom Tree", r: 84, points: 1500 },
+      { emoji: "✨", name: "Magic Bloom", r: 100, points: 3500 }
+    ];
+
+    let flowers = [];
+    let particles = [];
+    let floatingTexts = [];
+    let score = 0;
+    let combo = 0;
+    let aimX = W / 2;
+    let nextType = randomStartType();
+    let canDrop = true;
+    let gameOver = false;
+    let paused = false;
+    let soundOn = true;
+
+    let best = Number(localStorage.getItem("flowerMergeBest") || 0);
+
+    bestEl.textContent = best;
+    nextFlowerEl.textContent = flowerTypes[nextType].emoji;
+
+    function randomStartType() {
+      return Math.floor(Math.random() * 3);
+    }
+
+    function restartGame() {
+      flowers = [];
+      particles = [];
+      floatingTexts = [];
+      score = 0;
+      combo = 0;
+      gameOver = false;
+      paused = false;
+      canDrop = true;
+      nextType = randomStartType();
+      scoreEl.textContent = score;
+      nextFlowerEl.textContent = flowerTypes[nextType].emoji;
+    }
+
+    function toggleSound() {
+      soundOn = !soundOn;
+      soundLabel.textContent = soundOn ? "On" : "Off";
+    }
+
+    function playPop() {
+      if (!soundOn) return;
+
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audio = new AudioContext();
+        const osc = audio.createOscillator();
+        const gain = audio.createGain();
+
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(520, audio.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, audio.currentTime + 0.08);
+
+        gain.gain.setValueAtTime(0.08, audio.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.12);
+
+        osc.connect(gain);
+        gain.connect(audio.destination);
+
+        osc.start();
+        osc.stop(audio.currentTime + 0.12);
+      } catch (e) {}
+    }
+
+    function addFlower(x) {
+      if (!canDrop || gameOver || paused) return;
+
+      const type = nextType;
+      const info = flowerTypes[type];
+
+      flowers.push({
+        x: Math.max(info.r, Math.min(W - info.r, x)),
+        y: 48,
+        vx: 0,
+        vy: 0,
+        type,
+        r: info.r,
+        merged: false,
+        wobble: 0,
+        rotation: Math.random() * 0.4 - 0.2
+      });
+
+      nextType = randomStartType();
+      nextFlowerEl.textContent = flowerTypes[nextType].emoji;
+
+      canDrop = false;
+      setTimeout(() => canDrop = true, 430);
+    }
+
+    function mergeFlowers(i, j) {
+      const a = flowers[i];
+      const b = flowers[j];
+
+      if (a.type >= flowerTypes.length - 1) return;
+
+      const newType = a.type + 1;
+      const info = flowerTypes[newType];
+
+      const x = (a.x + b.x) / 2;
+      const y = (a.y + b.y) / 2;
+
+      flowers.splice(j, 1);
+      flowers.splice(i, 1);
+
+      flowers.push({
+        x,
+        y,
+        vx: 0,
+        vy: -2.2,
+        type: newType,
+        r: info.r,
+        merged: true,
+        wobble: 18,
+        rotation: 0
+      });
+
+      combo++;
+
+      const gained = info.points * Math.max(1, combo);
+      score += gained;
+      scoreEl.textContent = score;
+
+      if (score > best) {
+        best = score;
+        localStorage.setItem("flowerMergeBest", best);
+        bestEl.textContent = best;
+      }
+
+      createSparkles(x, y, info.emoji);
+      floatingTexts.push({
+        x,
+        y,
+        text: combo > 1 ? `Combo x${combo}! +${gained}` : `+${gained}`,
+        life: 70
+      });
+
+      playPop();
+
+      setTimeout(() => {
+        const last = flowers[flowers.length - 1];
+        if (last) last.merged = false;
+      }, 220);
+    }
+
+    function createSparkles(x, y, emoji) {
+      for (let i = 0; i < 18; i++) {
+        particles.push({
+          x,
+          y,
+          vx: Math.cos(i) * (Math.random() * 3 + 1),
+          vy: Math.sin(i) * (Math.random() * 3 + 1),
+          life: 45,
+          size: Math.random() * 5 + 3,
+          emoji: Math.random() > 0.6 ? emoji : "✨"
+        });
+      }
+    }
+
+    function updatePhysics() {
+      if (gameOver || paused) return;
+
+      for (const f of flowers) {
+        f.vy += 0.3;
+        f.x += f.vx;
+        f.y += f.vy;
+
+        f.vx *= 0.987;
+        f.vy *= 0.988;
+
+        if (f.wobble > 0) f.wobble *= 0.9;
+
+        if (f.x - f.r < 0) {
+          f.x = f.r;
+          f.vx *= -0.45;
+          f.wobble = 8;
+        }
+
+        if (f.x + f.r > W) {
+          f.x = W - f.r;
+          f.vx *= -0.45;
+          f.wobble = 8;
+        }
+
+        if (f.y + f.r > H - 12) {
+          f.y = H - 12 - f.r;
+          f.vy *= -0.22;
+          f.vx *= 0.94;
+          f.wobble = Math.max(f.wobble, 5);
+        }
+      }
+
+      let mergedThisFrame = false;
+
+      for (let i = 0; i < flowers.length; i++) {
+        for (let j = i + 1; j < flowers.length; j++) {
+          const a = flowers[i];
+          const b = flowers[j];
+
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const dist = Math.hypot(dx, dy);
+          const minDist = a.r + b.r;
+
+          if (dist < minDist && dist > 0) {
+            if (
+              a.type === b.type &&
+              !a.merged &&
+              !b.merged &&
+              a.type < flowerTypes.length - 1
+            ) {
+              mergeFlowers(i, j);
+              mergedThisFrame = true;
+              return;
+            }
+
+            const overlap = minDist - dist;
+            const nx = dx / dist;
+            const ny = dy / dist;
+
+            a.x -= nx * overlap * 0.5;
+            a.y -= ny * overlap * 0.5;
+            b.x += nx * overlap * 0.5;
+            b.y += ny * overlap * 0.5;
+
+            const bounce = 0.035;
+            a.vx -= nx * bounce * overlap;
+            a.vy -= ny * bounce * overlap;
+            b.vx += nx * bounce * overlap;
+            b.vy += ny * bounce * overlap;
+
+            a.wobble = Math.max(a.wobble, 3);
+            b.wobble = Math.max(b.wobble, 3);
+          }
+        }
+      }
+
+      if (!mergedThisFrame) {
+        combo = Math.max(0, combo - 0.01);
+      }
+
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.03;
+        p.life--;
+      }
+
+      particles = particles.filter(p => p.life > 0);
+
+      for (const t of floatingTexts) {
+        t.y -= 0.7;
+        t.life--;
+      }
+
+      floatingTexts = floatingTexts.filter(t => t.life > 0);
+
+      const stackedTooHigh = flowers.some(f => {
+        return f.y - f.r < 90 && Math.abs(f.vy) < 0.35;
+      });
+
+      if (stackedTooHigh && flowers.length > 9) {
+        gameOver = true;
+      }
+    }
+
+    function drawBackgroundDecor() {
+      ctx.save();
+
+      ctx.fillStyle = "rgba(255, 197, 227, .24)";
+      for (let i = 0; i < 8; i++) {
+        ctx.beginPath();
+        ctx.arc(50 + i * 70, 590 + Math.sin(Date.now() / 600 + i) * 6, 38, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    function drawFlower(f) {
+      const info = flowerTypes[f.type];
+
+      ctx.save();
+      ctx.translate(f.x, f.y);
+
+      const wobbleScale = 1 + Math.sin(Date.now() / 70) * (f.wobble / 120);
+      ctx.scale(wobbleScale, 1 / wobbleScale);
+      ctx.rotate(f.rotation);
+
+      ctx.beginPath();
+      ctx.arc(0, 0, f.r, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255, 225, 242, .88)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(219, 72, 148, .45)";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(-f.r * 0.28, -f.r * 0.3, f.r * 0.22, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255,255,255,.45)";
+      ctx.fill();
+
+      ctx.font = `${f.r * 1.18}px serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(info.emoji, 0, 2);
+
+      ctx.restore();
+    }
+
+    function drawParticles() {
+      for (const p of particles) {
+        ctx.save();
+        ctx.globalAlpha = p.life / 45;
+        ctx.font = `${p.size * 3}px serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(p.emoji, p.x, p.y);
+        ctx.restore();
+      }
+    }
+
+    function drawFloatingTexts() {
+      for (const t of floatingTexts) {
+        ctx.save();
+        ctx.globalAlpha = t.life / 70;
+        ctx.fillStyle = "#d94f9d";
+        ctx.font = "bold 20px Trebuchet MS";
+        ctx.textAlign = "center";
+        ctx.fillText(t.text, t.x, t.y);
+        ctx.restore();
+      }
+    }
+
+    function drawAim() {
+      ctx.save();
+
+      ctx.beginPath();
+      ctx.moveTo(aimX, 0);
+      ctx.lineTo(aimX, 55);
+      ctx.strokeStyle = "rgba(217, 79, 157, .45)";
+      ctx.lineWidth = 4;
+      ctx.setLineDash([8, 8]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.font = "36px serif";
+      ctx.textAlign = "center";
+      ctx.fillText(flowerTypes[nextType].emoji, aimX, 38);
+
+      ctx.restore();
+    }
+
+    function drawDangerLine() {
+      ctx.fillStyle = "rgba(255, 142, 197, .35)";
+      ctx.fillRect(0, 88, W, 3);
+
+      ctx.fillStyle = "#d94f9d";
+      ctx.font = "14px Trebuchet MS";
+      ctx.textAlign = "center";
+      ctx.fillText("danger line", W / 2, 80);
+    }
+
+    function drawGameOver() {
+      if (!gameOver) return;
+
+      ctx.save();
+      ctx.fillStyle = "rgba(255, 240, 248, .92)";
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.fillStyle = "#d94f9d";
+      ctx.font = "bold 42px Trebuchet MS";
+      ctx.textAlign = "center";
+      ctx.fillText("Garden Full!", W / 2, H / 2 - 40);
+
+      ctx.font = "22px Trebuchet MS";
+      ctx.fillText("Final Score: " + score, W / 2, H / 2 + 5);
+      ctx.fillText("Click Restart Garden to play again", W / 2, H / 2 + 42);
+
+      ctx.font = "46px serif";
+      ctx.fillText("🌸 💐 🌷", W / 2, H / 2 + 100);
+
+      ctx.restore();
+    }
+
+    function drawPaused() {
+      if (!paused || gameOver) return;
+
+      ctx.save();
+      ctx.fillStyle = "rgba(255, 240, 248, .88)";
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.fillStyle = "#d94f9d";
+      ctx.font = "bold 40px Trebuchet MS";
+      ctx.textAlign = "center";
+      ctx.fillText("Paused", W / 2, H / 2);
+
+      ctx.font = "18px Trebuchet MS";
+      ctx.fillText("Press space to continue", W / 2, H / 2 + 38);
+
+      ctx.restore();
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+
+      drawBackgroundDecor();
+      drawDangerLine();
+      drawAim();
+
+      for (const f of flowers) drawFlower(f);
+
+      drawParticles();
+      drawFloatingTexts();
+      drawGameOver();
+      drawPaused();
+    }
+
+    function loop() {
+      updatePhysics();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    function updateAimFromEvent(clientX) {
+      const rect = canvas.getBoundingClientRect();
+      aimX = (clientX - rect.left) * (canvas.width / rect.width);
+      aimX = Math.max(25, Math.min(W - 25, aimX));
+    }
+
+    canvas.addEventListener("mousemove", e => {
+      updateAimFromEvent(e.clientX);
+    });
+
+    canvas.addEventListener("click", () => {
+      addFlower(aimX);
+    });
+
+    canvas.addEventListener("touchmove", e => {
+      e.preventDefault();
+      updateAimFromEvent(e.touches[0].clientX);
+    }, { passive: false });
+
+    canvas.addEventListener("touchstart", e => {
+      updateAimFromEvent(e.touches[0].clientX);
+    });
+
+    canvas.addEventListener("touchend", () => {
+      addFlower(aimX);
+    });
+
+    document.addEventListener("keydown", e => {
+      if (e.code === "Space") {
+        paused = !paused;
+      }
+    });
+
+    function createPagePetals() {
+      const petals = ["🌸", "🌷", "🌼", "💗", "✨"];
+
+      for (let i = 0; i < 24; i++) {
+        const petal = document.createElement("div");
+        petal.className = "petal";
+        petal.textContent = petals[Math.floor(Math.random() * petals.length)];
+        petal.style.left = Math.random() * 100 + "vw";
+        petal.style.animationDuration = 7 + Math.random() * 10 + "s";
+        petal.style.animationDelay = Math.random() * 8 + "s";
+        petal.style.fontSize = 16 + Math.random() * 18 + "px";
+        document.body.appendChild(petal);
+      }
+    }
+
+    createPagePetals();
+    loop();
+  </script>
+</body>
+</html>
