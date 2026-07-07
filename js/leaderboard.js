@@ -31,8 +31,8 @@ const GabiLeaderboard = (() => {
   /* ---------- ANTI-CHEAT SANITY CHECKS ---------- */
   function isPlausible(score, durationMs, game) {
     if (!Number.isFinite(score) || score < 0) return false;
-    const maxScore = game === "flower-merge" ? 2000000 : cfg.MAX_PLAUSIBLE_SCORE;
-    const minMsPerPoint = game === "flower-merge" ? 6 : cfg.MIN_MS_PER_POINT;
+    const maxScore = game === "flower-merge" ? 2000000 : game === "2048" ? 5000000 : cfg.MAX_PLAUSIBLE_SCORE;
+    const minMsPerPoint = game === "flower-merge" ? 6 : game === "2048" ? 2 : cfg.MIN_MS_PER_POINT;
     if (score > maxScore) return false;
     // Must have survived a minimum time per point (stops instant huge scores)
     if (score > 0 && durationMs < score * minMsPerPoint) return false;

@@ -38,6 +38,17 @@ const GAMES = [
     hasLeaderboard: true
 }
 ,{
+    id: "2048",
+    title: "2048",
+    emoji: "🧋",
+    thumb: null,
+    description: "Slide and merge kawaii animals, boba treats, and cosmic cuties on 4x4, 5x5, or 6x6 boards.",
+    tags: ["Puzzle", "Merge", "Kawaii"],
+    link: "games/2048/index.html",
+    featured: true,
+    hasLeaderboard: true
+}
+,{
        id: "slimeria",
        title: "Slimeria",
        emoji: "🧪",

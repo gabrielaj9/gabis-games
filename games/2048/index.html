@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>2048 — Gabi's Games</title>
+  <meta name="description" content="A pastel kawaii 2048 puzzle with cute animal and boba tiles, board sizes, undo, and a 4x4 leaderboard.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Quicksand:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/styles.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="nav">
+    <a class="nav__logo" href="../../index.html">Gabi's Games 🎀</a>
+    <div style="display:flex;align-items:center;gap:12px">
+      <ul class="nav__links">
+        <li><a href="../../index.html">Home</a></li>
+        <li><a href="../../games.html">Games</a></li>
+        <li><a href="../../about.html">About</a></li>
+        <li><a href="../../leaderboard.html">Leaderboard</a></li>
+      </ul>
+      <button class="mute-btn" aria-label="Toggle sound">🔊</button>
+      <button class="nav__toggle" aria-label="Menu">☰</button>
+    </div>
+  </nav>
+
+  <main class="game-page">
+    <section class="game-shell">
+      <header class="game-header">
+        <div>
+          <h1>2048</h1>
+          <p>Merge matching kawaii friends into the dreamiest pastel collection.</p>
+        </div>
+        <label class="name-field">
+          Name
+          <input id="player-name" maxlength="12" placeholder="Cutie">
+        </label>
+      </header>
+
+      <section class="top-panel" aria-label="Game controls and score">
+        <div class="score-card"><span>Score</span><strong id="score">0</strong></div>
+        <div class="score-card"><span>Best</span><strong id="best">0</strong></div>
+        <div class="score-card score-card--wide"><span>Current Friend</span><strong id="current-tile">Tiny Bunny</strong></div>
+        <button class="icon-btn" id="btn-restart" aria-label="Restart game">↻</button>
+        <button class="icon-btn" id="btn-undo" aria-label="Undo last move">↶</button>
+      </section>
+
+      <section class="mode-panel" aria-label="Board size">
+        <button class="size-btn is-active" data-size="4">4x4</button>
+        <button class="size-btn" data-size="5">5x5</button>
+        <button class="size-btn" data-size="6">6x6</button>
+        <span id="leader-note">Leaderboard enabled for 4x4</span>
+      </section>
+
+      <section class="board-wrap">
+        <div id="board" class="board" aria-label="2048 board"></div>
+        <div id="overlay" class="overlay hide">
+          <h2 id="overlay-title">Game Over</h2>
+          <p id="overlay-text">No more moves.</p>
+          <div class="overlay-actions">
+            <button class="btn" id="btn-keep-going">Keep Going</button>
+            <button class="btn btn--ghost" id="btn-play-again">Play Again</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="below-panel">
+        <div class="moves-card"><span>Moves</span><strong id="moves">0</strong></div>
+        <div class="moves-card"><span>Largest</span><strong id="largest">2</strong></div>
+        <div class="moves-card"><span>Mode</span><strong id="mode-label">4x4</strong></div>
+      </section>
+
+      <section class="leader-card" id="leader-card">
+        <div class="leader-card__top">
+          <h2>4x4 Leaders 🏆</h2>
+          <a href="../../leaderboard.html">Full board</a>
+        </div>
+        <ol id="leader-list">
+          <li>No 4x4 scores yet.</li>
+        </ol>
+      </section>
+    </section>
+  </main>
+
+  <script src="../../js/config.js"></script>
+  <script src="../../js/audio.js"></script>
+  <script src="../../js/leaderboard.js"></script>
+  <script src="../../js/main.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
