@@ -235,14 +235,26 @@ body {
   text-align: center;
 }
 
+.tile__face::before {
+  content: "";
+  position: absolute;
+  inset: 9%;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 35% 26%, rgba(255,255,255,0.72), transparent 20%),
+    radial-gradient(circle at 66% 76%, rgba(255,255,255,0.32), transparent 22%);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
 .tile__shine {
   position: absolute;
-  top: 10%;
-  left: 12%;
-  width: 34%;
-  height: 18%;
+  top: 8%;
+  left: 10%;
+  width: 38%;
+  height: 16%;
   border-radius: 999px;
-  background: rgba(255,255,255,0.56);
+  background: rgba(255,255,255,0.68);
   transform: rotate(-24deg);
   pointer-events: none;
 }
@@ -276,23 +288,93 @@ body {
   transform: rotate(18deg);
 }
 
-.tile__emoji {
+.tile__portrait {
+  position: relative;
+  display: grid;
+  place-items: center;
+  z-index: 2;
+  width: 72%;
+  height: 68%;
+  margin-top: -4%;
+  border-radius: 42% 42% 48% 48%;
+  background:
+    radial-gradient(circle at 34% 24%, rgba(255,255,255,0.75), transparent 22%),
+    rgba(255,255,255,0.34);
+  box-shadow:
+    inset 0 -10px 14px rgba(121, 77, 112, 0.1),
+    0 6px 0 rgba(255,255,255,0.42);
+}
+
+.tile__body {
   position: relative;
   z-index: 2;
-  font-size: clamp(1.5rem, 8vw, 3.2rem);
-  line-height: 0.92;
-  filter: drop-shadow(0 3px 0 rgba(255,255,255,0.75));
+  font-size: clamp(1.95rem, 8.5vw, 4.35rem);
+  line-height: 0.9;
+  filter: drop-shadow(0 4px 0 rgba(255,255,255,0.8));
+}
+
+.tile__eyes,
+.tile__mouth,
+.tile__cheeks,
+.tile__detail {
+  position: absolute;
+  pointer-events: none;
+}
+
+.tile__eyes {
+  left: 50%;
+  top: 54%;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #6f5367;
+  transform: translateX(-18px);
+  box-shadow: 30px 0 0 #6f5367;
+  opacity: 0.74;
+}
+
+.tile__mouth {
+  left: 50%;
+  top: 62%;
+  width: 18px;
+  height: 10px;
+  border-bottom: 3px solid #6f5367;
+  border-radius: 0 0 18px 18px;
+  transform: translateX(-50%);
+  opacity: 0.66;
+}
+
+.tile__cheeks {
+  left: 50%;
+  top: 61%;
+  width: 11px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 119, 178, 0.46);
+  transform: translateX(-30px);
+  box-shadow: 49px 0 0 rgba(255, 119, 178, 0.46);
+}
+
+.tile__detail--one {
+  right: 12%;
+  top: 14%;
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.72);
+}
+
+.tile__detail--two {
+  left: 12%;
+  bottom: 14%;
+  width: 13px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.42);
 }
 
 .tile__cute-face {
-  position: absolute;
-  left: 50%;
-  top: 61%;
-  display: flex;
-  gap: 17px;
-  transform: translateX(-50%);
-  opacity: 0.34;
-  pointer-events: none;
+  display: none;
 }
 
 .tile__cute-face span {
@@ -312,34 +394,108 @@ body {
   text-shadow: 0 1px 4px rgba(119, 67, 108, 0.16);
 }
 
-.tile__label {
-  position: relative;
-  z-index: 2;
-  max-width: 92%;
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.72);
-  color: #6f5367;
-  font: 800 clamp(0.52rem, 1.8vw, 0.72rem) "Quicksand", sans-serif;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.board[data-size="5"] .tile__portrait,
+.board[data-size="6"] .tile__portrait {
+  width: 78%;
+  height: 72%;
 }
 
-.board[data-size="5"] .tile__label,
-.board[data-size="6"] .tile__label {
+.board[data-size="5"] .tile__body,
+.board[data-size="6"] .tile__body {
+  font-size: clamp(1.45rem, 6.3vw, 3rem);
+}
+
+.board[data-size="6"] .tile__eyes,
+.board[data-size="6"] .tile__mouth,
+.board[data-size="6"] .tile__cheeks {
   display: none;
 }
 
-.board[data-size="6"] .tile__emoji {
-  font-size: clamp(1.2rem, 6vw, 2.55rem);
+.tile__value {
+  position: absolute;
+  z-index: 4;
+  right: 8px;
+  bottom: 7px;
+  min-width: 34px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.86);
+  color: rgba(94, 67, 87, 0.86);
+  border: 2px solid rgba(255,255,255,0.9);
+  box-shadow: 0 4px 10px rgba(104, 71, 97, 0.14);
+  font: 800 clamp(0.62rem, 2vw, 0.88rem) "Quicksand", sans-serif;
 }
 
-.tile__value {
-  position: relative;
-  z-index: 2;
-  color: rgba(94, 67, 87, 0.78);
-  font: 800 clamp(0.48rem, 1.7vw, 0.68rem) "Quicksand", sans-serif;
+.tile--boba .tile__portrait {
+  border-radius: 25% 25% 38% 38%;
+}
+
+.tile--boba .tile__eyes,
+.tile--boba .tile__mouth,
+.tile--boba .tile__cheeks,
+.tile--moon .tile__eyes,
+.tile--moon .tile__mouth,
+.tile--moon .tile__cheeks,
+.tile--star .tile__eyes,
+.tile--star .tile__mouth,
+.tile--star .tile__cheeks,
+.tile--planet .tile__eyes,
+.tile--planet .tile__mouth,
+.tile--planet .tile__cheeks,
+.tile--galaxy .tile__eyes,
+.tile--galaxy .tile__mouth,
+.tile--galaxy .tile__cheeks,
+.tile--crown .tile__eyes,
+.tile--crown .tile__mouth,
+.tile--crown .tile__cheeks {
+  opacity: 0.42;
+}
+
+.tile--cat .tile__ears::before,
+.tile--cat .tile__ears::after,
+.tile--fox .tile__ears::before,
+.tile--fox .tile__ears::after {
+  border-radius: 15% 85% 35% 65%;
+}
+
+.tile--frog .tile__ears::before,
+.tile--frog .tile__ears::after {
+  border-radius: 999px;
+  width: 22%;
+}
+
+.tile--panda .tile__portrait,
+.tile--penguin .tile__portrait {
+  box-shadow:
+    inset 14px 0 0 rgba(111,83,103,0.18),
+    inset -14px 0 0 rgba(111,83,103,0.18),
+    0 6px 0 rgba(255,255,255,0.42);
+}
+
+.tile--butterfly .tile__portrait,
+.tile--star .tile__portrait,
+.tile--galaxy .tile__portrait {
+  border-radius: 34%;
+  transform: rotate(-4deg);
+}
+
+.tile--planet .tile__portrait::after {
+  content: "";
+  position: absolute;
+  left: -12%;
+  right: -12%;
+  top: 48%;
+  height: 12%;
+  border-radius: 999px;
+  border: 4px solid rgba(255,255,255,0.58);
+  transform: rotate(-18deg);
+}
+
+.tile--crown .tile__portrait {
+  border-radius: 28% 28% 46% 46%;
+  background:
+    radial-gradient(circle at 34% 24%, rgba(255,255,255,0.78), transparent 22%),
+    linear-gradient(135deg, rgba(255,255,255,0.46), rgba(255,213,112,0.54));
 }
 
 .overlay {

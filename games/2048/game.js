@@ -24,24 +24,24 @@
   const leaderCard = document.getElementById("leader-card");
 
   const TILE_THEMES = [
-    { value: 2, emoji: "🐰", label: "Tiny Bunny", colors: ["#fff0f8", "#ffd2eb"] },
-    { value: 4, emoji: "🧋", label: "Strawberry Boba", colors: ["#ffe2f2", "#ffc0df"] },
-    { value: 8, emoji: "🐱", label: "Cream Kitten", colors: ["#fff5d6", "#ffe59a"] },
-    { value: 16, emoji: "🐼", label: "Panda Puff", colors: ["#f7f7ff", "#dcdcff"] },
-    { value: 32, emoji: "🐶", label: "Puppy Cake", colors: ["#ffe9da", "#ffc69d"] },
-    { value: 64, emoji: "🦊", label: "Peach Fox", colors: ["#ffd8c7", "#ff9f9f"] },
-    { value: 128, emoji: "🐸", label: "Melon Frog", colors: ["#ddffd7", "#9ef0b0"] },
-    { value: 256, emoji: "🐻", label: "Honey Bear", colors: ["#fff0bd", "#ffd36e"] },
-    { value: 512, emoji: "🐹", label: "Mochi Hamster", colors: ["#ffe8c8", "#ffb8c8"] },
-    { value: 1024, emoji: "🐧", label: "Snow Penguin", colors: ["#ddf6ff", "#9edcff"] },
-    { value: 2048, emoji: "🦄", label: "Pastel Unicorn", colors: ["#f7d7ff", "#b8f4ff"] },
-    { value: 4096, emoji: "🐬", label: "Dream Dolphin", colors: ["#cdf8ff", "#8ab8ff"] },
-    { value: 8192, emoji: "🦋", label: "Sugar Butterfly", colors: ["#e8ddff", "#ffb7e7"] },
-    { value: 16384, emoji: "🌙", label: "Moon Macaron", colors: ["#fff8c8", "#c9c7ff"] },
-    { value: 32768, emoji: "⭐", label: "Star Parfait", colors: ["#fff2a8", "#ffb7d5"] },
-    { value: 65536, emoji: "🪐", label: "Boba Planet", colors: ["#d9f7ff", "#c8b7ff"] },
-    { value: 131072, emoji: "🌌", label: "Galaxy Sundae", colors: ["#b8b4ff", "#ffaad6"] },
-    { value: 262144, emoji: "👑", label: "Cosmic Cutie", colors: ["#ffe487", "#ff8fc9"] }
+    { value: 2, emoji: "🐰", label: "Tiny Bunny", art: "bunny", colors: ["#fff0f8", "#ffd2eb"] },
+    { value: 4, emoji: "🧋", label: "Strawberry Boba", art: "boba", colors: ["#ffe2f2", "#ffc0df"] },
+    { value: 8, emoji: "🐱", label: "Cream Kitten", art: "cat", colors: ["#fff5d6", "#ffe59a"] },
+    { value: 16, emoji: "🐼", label: "Panda Puff", art: "panda", colors: ["#f7f7ff", "#dcdcff"] },
+    { value: 32, emoji: "🐶", label: "Puppy Cake", art: "puppy", colors: ["#ffe9da", "#ffc69d"] },
+    { value: 64, emoji: "🦊", label: "Peach Fox", art: "fox", colors: ["#ffd8c7", "#ff9f9f"] },
+    { value: 128, emoji: "🐸", label: "Melon Frog", art: "frog", colors: ["#ddffd7", "#9ef0b0"] },
+    { value: 256, emoji: "🐻", label: "Honey Bear", art: "bear", colors: ["#fff0bd", "#ffd36e"] },
+    { value: 512, emoji: "🐹", label: "Mochi Hamster", art: "hamster", colors: ["#ffe8c8", "#ffb8c8"] },
+    { value: 1024, emoji: "🐧", label: "Snow Penguin", art: "penguin", colors: ["#ddf6ff", "#9edcff"] },
+    { value: 2048, emoji: "🦄", label: "Pastel Unicorn", art: "unicorn", colors: ["#f7d7ff", "#b8f4ff"] },
+    { value: 4096, emoji: "🐬", label: "Dream Dolphin", art: "dolphin", colors: ["#cdf8ff", "#8ab8ff"] },
+    { value: 8192, emoji: "🦋", label: "Sugar Butterfly", art: "butterfly", colors: ["#e8ddff", "#ffb7e7"] },
+    { value: 16384, emoji: "🌙", label: "Moon Macaron", art: "moon", colors: ["#fff8c8", "#c9c7ff"] },
+    { value: 32768, emoji: "⭐", label: "Star Parfait", art: "star", colors: ["#fff2a8", "#ffb7d5"] },
+    { value: 65536, emoji: "🪐", label: "Boba Planet", art: "planet", colors: ["#d9f7ff", "#c8b7ff"] },
+    { value: 131072, emoji: "🌌", label: "Galaxy Sundae", art: "galaxy", colors: ["#b8b4ff", "#ffaad6"] },
+    { value: 262144, emoji: "👑", label: "Cosmic Cutie", art: "crown", colors: ["#ffe487", "#ff8fc9"] }
   ];
 
   let size = DEFAULT_SIZE;
@@ -272,7 +272,7 @@
         if (!value) continue;
         const theme = tileTheme(value);
         const tile = document.createElement("div");
-        tile.className = "tile";
+        tile.className = `tile tile--${theme.art || "crown"}`;
         if (value === mergedValue) tile.classList.add("is-merged");
         if (combo && value === mergedValue) tile.classList.add("is-combo");
         tile.style.width = `${cellSize}px`;
@@ -294,10 +294,16 @@
           <div class="tile__face">
             <span class="tile__shine"></span>
             <span class="tile__ears"></span>
-            <div class="tile__emoji">${theme.emoji}</div>
+            <div class="tile__portrait" aria-hidden="true">
+              <span class="tile__body">${theme.emoji}</span>
+              <span class="tile__eyes"></span>
+              <span class="tile__mouth"></span>
+              <span class="tile__cheeks"></span>
+              <span class="tile__detail tile__detail--one"></span>
+              <span class="tile__detail tile__detail--two"></span>
+            </div>
             <div class="tile__cute-face"><span></span><span></span></div>
             <span class="tile__sparkles">✦</span>
-            <div class="tile__label">${theme.label}</div>
             <div class="tile__value">${value}</div>
           </div>
         `;
