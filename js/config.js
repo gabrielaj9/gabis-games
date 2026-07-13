@@ -81,6 +81,17 @@ const GAMES = [
     link: "games/peaceful-pond/index.html",
     featured: true,
     hasLeaderboard: true
+},
+{
+    id: "squish-run",
+    title: "Squish Run",
+    emoji: "🛸",
+    thumb: null,
+    description: "Guide a squishy dumpling explorer through dreamy gravity-shifting tunnels in space.",
+    tags: ["Runner", "Space", "Kawaii"],
+    link: "games/squish-run/index.html",
+    featured: true,
+    hasLeaderboard: true
 }
 ];
 

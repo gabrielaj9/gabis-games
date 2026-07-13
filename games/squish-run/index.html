@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Squish Run — Gabi's Games</title>
+  <meta name="description" content="Guide a squishy dumpling explorer through gravity-shifting pastel tunnels in space.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Quicksand:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/styles.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="nav">
+    <a class="nav__logo" href="../../index.html">Gabi's Games 🎀</a>
+    <div style="display:flex;align-items:center;gap:12px">
+      <ul class="nav__links">
+        <li><a href="../../index.html">Home</a></li>
+        <li><a href="../../games.html">Games</a></li>
+        <li><a href="../../about.html">About</a></li>
+        <li><a href="../../leaderboard.html">Leaderboard</a></li>
+      </ul>
+      <button class="mute-btn" aria-label="Toggle sound">🔊</button>
+      <button class="nav__toggle" aria-label="Menu">☰</button>
+    </div>
+  </nav>
+
+  <main class="run-shell">
+    <section class="game-frame" aria-label="Squish Run game">
+      <canvas id="game" width="960" height="600"></canvas>
+
+      <div class="hud" id="hud">
+        <div><span>Distance</span><strong id="hud-distance">0m</strong></div>
+        <div><span>Score</span><strong id="hud-score">0</strong></div>
+        <div><span>Crystals</span><strong id="hud-crystals">0</strong></div>
+        <div><span>Level</span><strong id="hud-level">1</strong></div>
+      </div>
+
+      <div class="touch-controls" id="touch-controls" aria-label="Touch controls">
+        <div class="stick" id="stick"><span></span></div>
+        <button class="touch-btn" id="touch-jump" aria-label="Jump">Jump</button>
+        <button class="touch-btn touch-btn--small" id="touch-pause" aria-label="Pause">Pause</button>
+      </div>
+
+      <div class="toast-stack" id="toast-stack"></div>
+
+      <section class="screen screen--home" id="screen-home">
+        <div class="brand-panel">
+          <div class="squish-mascot" aria-hidden="true">
+            <span class="squish-mascot__shine"></span>
+            <span class="squish-mascot__eye squish-mascot__eye--left"></span>
+            <span class="squish-mascot__eye squish-mascot__eye--right"></span>
+            <span class="squish-mascot__smile"></span>
+          </div>
+          <p class="eyebrow">The Mochiway Expedition</p>
+          <h1>Squish Run</h1>
+          <p class="tagline">Run, jump, and roll gravity through dreamy tunnels at the edge of the galaxy.</p>
+          <input id="name-input" maxlength="12" placeholder="Runner name">
+          <div class="mode-row">
+            <button class="chip is-active" data-mode="explore">Explore</button>
+            <button class="chip" data-mode="endless">Infinite</button>
+            <button class="chip" data-mode="daily">Daily</button>
+            <button class="chip" data-mode="timeTrial">Time Trial</button>
+          </div>
+          <input class="seed-input" id="seed-input" maxlength="18" placeholder="World seed">
+          <div class="action-row">
+            <button class="btn" id="btn-play">Play</button>
+            <button class="btn btn--ghost" id="btn-leaderboard">Leaderboard</button>
+            <button class="btn btn--ghost" id="btn-instructions">How to Play</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen hide" id="screen-panel">
+        <div class="panel">
+          <div class="panel__top">
+            <h2 id="panel-title">Panel</h2>
+            <button class="icon-btn" id="btn-panel-close" aria-label="Close">×</button>
+          </div>
+          <div class="tabs">
+            <button data-panel="leaderboard">Leaderboard</button>
+            <button data-panel="settings">Settings</button>
+            <button data-panel="achievements">Achievements</button>
+            <button data-panel="stats">Stats</button>
+            <button data-panel="credits">Credits</button>
+          </div>
+          <div class="panel__body" id="panel-body"></div>
+        </div>
+      </section>
+
+      <section class="screen hide" id="screen-pause">
+        <div class="pause-card">
+          <h2>Paused</h2>
+          <p>The tunnel is holding its breath.</p>
+          <button class="btn" id="btn-resume">Resume</button>
+          <button class="btn btn--ghost" id="btn-fullscreen">Fullscreen</button>
+          <button class="btn btn--ghost" id="btn-restart">Restart</button>
+        </div>
+      </section>
+
+      <section class="screen hide" id="screen-over">
+        <div class="over-card">
+          <p class="eyebrow">Run complete</p>
+          <h2 id="over-title">Beautiful try</h2>
+          <div class="summary-grid" id="summary-grid"></div>
+          <div class="action-row">
+            <button class="btn" id="btn-run-again">Run Again</button>
+            <button class="btn btn--ghost" id="btn-over-board">Leaderboard</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="loading-screen" id="loading-screen">
+        <div class="loader-orbit"></div>
+        <p>Opening the Mochiway...</p>
+      </section>
+    </section>
+  </main>
+
+  <script src="../../js/config.js"></script>
+  <script src="../../js/audio.js"></script>
+  <script src="../../js/main.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
