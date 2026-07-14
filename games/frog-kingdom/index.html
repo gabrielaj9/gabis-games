@@ -1,89 +1,245 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Frog Kingdom — Gabi's Games</title>
-
-  <link rel="stylesheet" href="style.css" />
+  <meta name="description" content="Build a living pastel frog civilization in the enchanted wetlands of Mossbell Marsh.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/styles.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="frog-page">
-    <a class="back-link" href="../../games.html">← Back to Games</a>
+  <nav class="nav">
+    <a class="nav__logo" href="../../index.html">Gabi's Games 🎀</a>
+    <div class="nav__actions">
+      <ul class="nav__links">
+        <li><a href="../../index.html">Home</a></li>
+        <li><a href="../../games.html">Games</a></li>
+        <li><a href="../../about.html">About</a></li>
+        <li><a href="../../leaderboard.html">Leaderboard</a></li>
+      </ul>
+      <button class="mute-btn" id="mute-button" aria-label="Toggle sound">🔊</button>
+      <button class="nav__toggle" aria-label="Menu">☰</button>
+    </div>
+  </nav>
 
-    <h1>🐸 Frog Kingdom 👑</h1>
-    <p class="subtitle">Build ponds, lily pads, bridges, libraries, restaurants, and grow a tiny frog civilization.</p>
+  <main class="kingdom-page">
+    <header class="kingdom-heading">
+      <div>
+        <p class="kingdom-heading__eyebrow">Chronicles of Mossbell Marsh</p>
+        <h1>Frog Kingdom</h1>
+      </div>
+      <p>Shape the wetlands, care for every citizen, and grow a tiny settlement into the Moonpetal Kingdom.</p>
+    </header>
 
-    <section class="game-shell">
-      <canvas id="game"></canvas>
+    <section class="kingdom-app" aria-label="Frog Kingdom civilization game">
+      <div class="kingdom-stage">
+        <canvas id="game" width="1040" height="680" aria-label="Interactive isometric kingdom map"></canvas>
 
-      <div id="screen-start" class="screen">
-        <div class="modal">
-          <h2>🐸 Welcome to Frog Kingdom</h2>
-          <p>Grow a kawaii frog civilization with lily pads, gardens, restaurants, and a royal frog castle.</p>
-
-          <input id="name-input" maxlength="16" placeholder="Enter your name" />
-
-          <button id="btn-new">New Kingdom 🌱</button>
-          <button id="btn-continue" class="hide">Continue Kingdom 🐸</button>
+        <div class="resource-bar" id="resource-bar">
+          <div><span>Flies</span><strong id="res-flies">120</strong></div>
+          <div><span>Berries</span><strong id="res-berries">30</strong></div>
+          <div><span>Reeds</span><strong id="res-reeds">40</strong></div>
+          <div><span>Knowledge</span><strong id="res-knowledge">0</strong></div>
+          <div><span>Population</span><strong id="res-population">3/4</strong></div>
+          <div><span>Wellbeing</span><strong id="res-health">100%</strong></div>
+          <div><span>Harmony</span><strong id="res-harmony">72%</strong></div>
+          <div><span>Safety</span><strong id="res-safety">42%</strong></div>
         </div>
+
+        <div class="world-status">
+          <strong id="world-day">Day 1</strong>
+          <span id="world-season">Blossomtide</span>
+          <span id="world-weather">Clear skies</span>
+        </div>
+
+        <div class="era-resource-strip" id="era-resource-strip" aria-label="Civilization resources"></div>
+
+        <div class="camera-tools" aria-label="Map controls">
+          <button id="zoom-out" aria-label="Zoom out" title="Zoom out">−</button>
+          <button id="zoom-home" aria-label="Center map" title="Center map">⌂</button>
+          <button id="zoom-focus" aria-label="Focus selected place" title="Focus selected place">◎</button>
+          <button id="zoom-in" aria-label="Zoom in" title="Zoom in">+</button>
+          <button id="pause-button" aria-label="Pause" title="Pause">Ⅱ</button>
+        </div>
+
+        <div class="marsh-actions" id="marsh-actions" aria-label="Marsh actions">
+          <button data-marsh-action="forage" title="Send nearby helpers to forage"><span>🍓</span><strong>Forage</strong><small>+ berries</small></button>
+          <button data-marsh-action="reeds" title="Gather loose building reeds"><span>🌾</span><strong>Cut reeds</strong><small>+ reeds</small></button>
+          <button data-marsh-action="clay" title="Dig river clay from the shallows"><span>🏺</span><strong>Dig clay</strong><small>Era 1</small></button>
+        </div>
+
+        <div class="placement-hint hide" id="placement-hint"></div>
+        <div class="toast-stack" id="toast-stack"></div>
       </div>
 
-      <div id="screen-pause" class="screen hide">
-        <div class="modal">
-          <h2>Paused 🌙</h2>
-          <button id="btn-resume">Resume</button>
-          <button id="btn-reset">Reset Kingdom</button>
+      <aside class="kingdom-sidebar">
+        <section class="era-panel">
+          <div class="era-panel__top">
+            <span id="era-number">Era I</span>
+            <strong id="era-name">The First Ripple</strong>
+          </div>
+          <div class="era-progress"><span id="era-progress"></span></div>
+          <p id="era-description">A handful of brave frogs have gathered beneath the Great Willow.</p>
+          <div class="era-worldbuilding">
+            <strong id="era-motto">Every path begins with one ripple.</strong>
+            <span id="era-detail">Willow shelters and family bands ring the old pond.</span>
+            <small id="era-health-note">Health: clean water, wild herbs, and careful luck.</small>
+          </div>
+          <button class="era-advance-button" id="advance-era-button">
+            <span>Advance Society</span>
+            <small id="advance-era-requirement">Gather the council requirements</small>
+          </button>
+        </section>
+
+        <section class="objective-panel">
+          <p class="panel-label">Council Request</p>
+          <h2 id="quest-title">Homes on the Water</h2>
+          <p id="quest-description">Create room for four frogs with lily homes or cottages.</p>
+          <div class="quest-reward" id="quest-reward">Reward: 35 flies</div>
+        </section>
+
+        <section class="selected-panel" id="selected-panel">
+          <p class="panel-label" id="selected-label">Kingdom Notes</p>
+          <h2 id="selected-title">The Great Willow</h2>
+          <p id="selected-description">The oldest tree in Mossbell. The council gathers beneath its lanterns.</p>
+          <div class="selected-stats" id="selected-stats"></div>
+          <div class="frog-actions hide" id="frog-actions">
+            <button data-frog-action="chat"><span>💬</span>Chat</button>
+            <button data-frog-action="treat"><span>🫐</span>Gift <small>2 berries</small></button>
+            <button data-frog-action="heal"><span>🌿</span>Care <small>3 berries</small></button>
+            <button data-frog-action="find"><span>◎</span>Focus</button>
+          </div>
+          <div class="job-assignment hide" id="job-assignment">
+            <label for="job-select">Assign a job</label>
+            <div>
+              <select id="job-select"></select>
+              <button id="assign-job">Assign</button>
+            </div>
+          </div>
+          <div class="job-assignment hide" id="task-assignment">
+            <label for="task-select">Assign a civic task</label>
+            <div>
+              <select id="task-select"></select>
+              <button id="assign-task">Assign</button>
+            </div>
+          </div>
+          <div class="building-residents hide" id="building-residents"></div>
+          <div class="job-assignment hide" id="building-assignment">
+            <label for="building-worker-select">Assign a worker</label>
+            <div>
+              <select id="building-worker-select"></select>
+              <button id="assign-building-worker">Assign</button>
+            </div>
+          </div>
+          <div class="building-actions hide" id="building-actions">
+            <button id="upgrade-building">Upgrade Building</button>
+            <small id="upgrade-building-cost"></small>
+          </div>
+          <div class="citizen-roster-heading">
+            <strong>Citizens</strong>
+            <small>Choose a frog to visit</small>
+          </div>
+          <div class="citizen-roster" id="citizen-roster"></div>
+        </section>
+
+        <section class="council-panel">
+          <div>
+            <p class="panel-label">Civilization Council</p>
+            <strong id="council-summary">Forager bands are forming</strong>
+          </div>
+          <div class="council-panel__actions">
+            <button id="open-tasks">Workforce</button>
+            <button id="open-trade">Trade</button>
+          </div>
+        </section>
+
+        <section class="chronicle-panel">
+          <div class="chronicle-panel__heading">
+            <p class="panel-label">Marsh Chronicle</p>
+            <button id="chronicle-toggle" aria-label="Collapse chronicle">⌃</button>
+          </div>
+          <div id="chronicle-list" class="chronicle-list"></div>
+        </section>
+      </aside>
+
+      <section class="build-dock">
+        <div class="build-dock__head">
+          <div>
+            <p class="panel-label">Build for Mossbell</p>
+            <strong id="build-category-title">Homes & Paths</strong>
+          </div>
+          <div class="build-tabs" id="build-tabs">
+            <button class="is-active" data-category="home">Home</button>
+            <button data-category="food">Harvest</button>
+            <button data-category="industry">Industry</button>
+            <button data-category="civic">Civic</button>
+            <button data-category="expansion">Expand</button>
+            <button data-category="beauty">Beauty</button>
+          </div>
         </div>
-      </div>
-
-      <div id="screen-over" class="screen hide">
-        <div class="modal">
-          <h2 id="over-title">👑 Civilization Achieved!</h2>
-          <p id="over-score">Kingdom Score: 0 🐸</p>
-
-          <h3>Leaderboard</h3>
-          <ol id="mini-lb"></ol>
-
-          <button id="btn-keep">Keep Playing</button>
-        </div>
-      </div>
+        <div class="build-list" id="build-list"></div>
+      </section>
     </section>
-
-    <p class="instructions">
-      Tap build buttons at the bottom of the game, then tap the map to place buildings. Tap frogs to meet them.
-    </p>
   </main>
 
-  <script>
-    window.GabiAudio = window.GabiAudio || {
-      startMusic(){},
-      unlock(){},
-      isMuted(){ return false; },
-      sfx: {
-        score(){},
-        click(){},
-        over(){}
-      }
-    };
+  <section class="game-screen" id="screen-start">
+    <div class="start-scene" aria-hidden="true">
+      <div class="start-scene__moon"></div>
+      <div class="start-scene__pond"></div>
+      <div class="start-scene__frog start-scene__frog--one">🐸</div>
+      <div class="start-scene__frog start-scene__frog--two">🐸</div>
+      <div class="start-scene__frog start-scene__frog--three">🐸</div>
+    </div>
+    <div class="start-content">
+      <p class="kingdom-heading__eyebrow">A new chapter begins</p>
+      <h2>Frog Kingdom</h2>
+      <p>The old waterways have gone quiet. Guide the Mossbell Council, welcome new frogs, and restore the Moonpetal Crown.</p>
+      <label for="name-input">Your royal name</label>
+      <input id="name-input" maxlength="16" placeholder="Keeper of the Marsh">
+      <div class="start-actions">
+        <button class="primary-button" id="btn-new">Begin a New Kingdom</button>
+        <button class="secondary-button hide" id="btn-continue">Continue Mossbell</button>
+      </div>
+    </div>
+  </section>
 
-    window.GabiLeaderboard = window.GabiLeaderboard || {
-      cleanName(name) {
-        return String(name || "Gabi").trim().slice(0, 16) || "Gabi";
-      },
-      async submit(entry) {
-        const key = "gabi_local_leaderboard_frog_kingdom";
-        const board = JSON.parse(localStorage.getItem(key) || "[]");
-        board.push(entry);
-        board.sort((a, b) => b.score - a.score);
-        localStorage.setItem(key, JSON.stringify(board.slice(0, 20)));
-        return { online: false, board };
-      },
-      async get() {
-        return JSON.parse(localStorage.getItem("gabi_local_leaderboard_frog_kingdom") || "[]");
-      }
-    };
-  </script>
+  <section class="game-screen hide" id="screen-pause">
+    <div class="pause-card">
+      <p class="kingdom-heading__eyebrow">The marsh is resting</p>
+      <h2>Paused</h2>
+      <button class="primary-button" id="btn-resume">Return to Mossbell</button>
+      <button class="secondary-button" id="btn-save">Save Kingdom</button>
+      <button class="danger-button" id="btn-reset">Begin Again</button>
+    </div>
+  </section>
+
+  <section class="game-screen hide" id="screen-victory">
+    <div class="pause-card victory-card">
+      <p class="kingdom-heading__eyebrow">The Moonpetal Crown awakens</p>
+      <h2>Kingdom Restored</h2>
+      <p id="victory-copy"></p>
+      <div class="victory-stats" id="victory-stats"></div>
+      <button class="primary-button" id="btn-keep-playing">Keep Building</button>
+    </div>
+  </section>
+
+  <section class="civilization-modal hide" id="civilization-modal" aria-label="Civilization council">
+    <div class="civilization-modal__panel">
+      <div class="civilization-modal__head">
+        <div>
+          <p class="panel-label">Mossbell Council Hall</p>
+          <h2 id="council-modal-title">Workforce</h2>
+        </div>
+        <button id="close-council" aria-label="Close council">×</button>
+      </div>
+      <p id="council-modal-copy"></p>
+      <div class="council-modal__content" id="council-modal-content"></div>
+    </div>
+  </section>
 
   <script src="game.js"></script>
 </body>
