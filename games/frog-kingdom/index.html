@@ -103,15 +103,25 @@
         </section>
 
         <section class="selected-panel" id="selected-panel">
-          <p class="panel-label" id="selected-label">Kingdom Notes</p>
-          <h2 id="selected-title">The Great Willow</h2>
+          <div class="selected-profile">
+            <div class="selected-avatar hide" id="selected-avatar" aria-hidden="true">
+              <span class="selected-avatar__eye selected-avatar__eye--left"></span>
+              <span class="selected-avatar__eye selected-avatar__eye--right"></span>
+              <span class="selected-avatar__smile"></span>
+            </div>
+            <div class="selected-profile__copy">
+              <p class="panel-label" id="selected-label">Kingdom Notes</p>
+              <h2 id="selected-title">The Great Willow</h2>
+            </div>
+          </div>
           <p id="selected-description">The oldest tree in Mossbell. The council gathers beneath its lanterns.</p>
+          <div class="frog-vitals hide" id="frog-vitals"></div>
           <div class="selected-stats" id="selected-stats"></div>
           <div class="frog-actions hide" id="frog-actions">
-            <button data-frog-action="chat"><span>💬</span>Chat</button>
-            <button data-frog-action="treat"><span>🫐</span>Gift <small>2 berries</small></button>
-            <button data-frog-action="heal"><span>🌿</span>Care <small>3 berries</small></button>
-            <button data-frog-action="find"><span>◎</span>Focus</button>
+            <button data-frog-action="chat" title="Spend time talking with this frog"><span>💬</span>Visit<small>Bond +1</small></button>
+            <button data-frog-action="treat" title="Give this frog a favorite berry treat"><span>🫐</span>Treat<small>2 berries</small></button>
+            <button data-frog-action="heal" title="Provide gentle care while this frog is sick"><span>🌿</span>Tend<small>3 berries</small></button>
+            <button data-frog-action="find" title="Center and zoom the map on this frog"><span>◎</span>Locate<small>On map</small></button>
           </div>
           <div class="job-assignment hide" id="job-assignment">
             <label for="job-select">Assign a job</label>
@@ -136,8 +146,10 @@
             </div>
           </div>
           <div class="building-actions hide" id="building-actions">
+            <strong id="building-tier">Tier I · Local Site</strong>
             <button id="upgrade-building">Upgrade Building</button>
             <small id="upgrade-building-cost"></small>
+            <div class="specialization-options hide" id="specialization-options"></div>
           </div>
           <div class="citizen-roster-heading">
             <strong>Citizens</strong>
@@ -150,10 +162,12 @@
           <div>
             <p class="panel-label">Civilization Council</p>
             <strong id="council-summary">Forager bands are forming</strong>
+            <small id="government-summary">The Willow Circle settles questions by consensus.</small>
           </div>
           <div class="council-panel__actions">
-            <button id="open-tasks">Workforce</button>
-            <button id="open-trade">Trade</button>
+            <button id="open-tasks"><span>🐸</span>Workforce</button>
+            <button id="open-trade"><span>🪷</span>Trade</button>
+            <button id="open-government"><span>👑</span>Realm</button>
           </div>
         </section>
 
@@ -173,13 +187,31 @@
             <strong id="build-category-title">Homes & Paths</strong>
           </div>
           <div class="build-tabs" id="build-tabs">
-            <button class="is-active" data-category="home">Home</button>
-            <button data-category="food">Harvest</button>
-            <button data-category="industry">Industry</button>
-            <button data-category="civic">Civic</button>
-            <button data-category="expansion">Expand</button>
-            <button data-category="beauty">Beauty</button>
+            <button class="is-active" data-category="home"><span>🏡</span>Home</button>
+            <button data-category="food"><span>🍓</span>Harvest</button>
+            <button data-category="industry"><span>🛠️</span>Industry</button>
+            <button data-category="civic"><span>🏛️</span>Civic</button>
+            <button data-category="expansion"><span>🗺️</span>Expand</button>
+            <button data-category="beauty"><span>🌷</span>Beauty</button>
           </div>
+        </div>
+        <div class="build-catalog-tools" id="build-catalog-tools">
+          <span>Chronological catalog</span>
+          <label for="build-era-filter">Era</label>
+          <select id="build-era-filter">
+            <option value="all">All eras</option>
+            <option value="available">Available now</option>
+            <option value="0">Era 0</option>
+            <option value="1">Era 1</option>
+            <option value="2">Era 2</option>
+            <option value="3">Era 3</option>
+            <option value="4">Era 4</option>
+            <option value="5">Era 5</option>
+            <option value="6">Era 6</option>
+            <option value="7">Era 7</option>
+            <option value="8">Era 8</option>
+            <option value="9">Era 9</option>
+          </select>
         </div>
         <div class="build-list" id="build-list"></div>
       </section>
