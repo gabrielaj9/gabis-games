@@ -72,6 +72,48 @@
           <button data-marsh-action="clay" title="Dig river clay from the shallows"><span>🏺</span><strong>Dig clay</strong><small>Era 1</small></button>
         </div>
 
+        <section class="build-dock" id="build-dock" aria-label="Kingdom building catalog">
+          <div class="build-dock__head">
+            <div class="build-dock__title">
+              <span class="build-dock__crest" aria-hidden="true">🛠️</span>
+              <div>
+                <p class="panel-label">Build for Mossbell</p>
+                <strong id="build-category-title">Homes & Paths</strong>
+              </div>
+            </div>
+            <div class="build-tabs" id="build-tabs">
+              <button class="is-active" data-category="home"><span>🏡</span>Home</button>
+              <button data-category="food"><span>🍓</span>Harvest</button>
+              <button data-category="industry"><span>🛠️</span>Industry</button>
+              <button data-category="civic"><span>🏛️</span>Civic</button>
+              <button data-category="expansion"><span>🗺️</span>Expand</button>
+              <button data-category="beauty"><span>🌷</span>Beauty</button>
+            </div>
+            <button class="build-dock__toggle" id="build-dock-toggle" aria-label="Minimize building catalog" aria-expanded="true" title="Minimize building catalog">⌄</button>
+          </div>
+          <div class="build-dock__body" id="build-dock-body">
+            <div class="build-catalog-tools" id="build-catalog-tools">
+              <span>Chronological catalog</span>
+              <label for="build-era-filter">Era</label>
+              <select id="build-era-filter">
+                <option value="all">All eras</option>
+                <option value="available">Available now</option>
+                <option value="0">Era 0</option>
+                <option value="1">Era 1</option>
+                <option value="2">Era 2</option>
+                <option value="3">Era 3</option>
+                <option value="4">Era 4</option>
+                <option value="5">Era 5</option>
+                <option value="6">Era 6</option>
+                <option value="7">Era 7</option>
+                <option value="8">Era 8</option>
+                <option value="9">Era 9</option>
+              </select>
+            </div>
+            <div class="build-list" id="build-list"></div>
+          </div>
+        </section>
+
         <div class="placement-hint hide" id="placement-hint"></div>
         <div class="toast-stack" id="toast-stack"></div>
       </div>
@@ -180,41 +222,6 @@
         </section>
       </aside>
 
-      <section class="build-dock">
-        <div class="build-dock__head">
-          <div>
-            <p class="panel-label">Build for Mossbell</p>
-            <strong id="build-category-title">Homes & Paths</strong>
-          </div>
-          <div class="build-tabs" id="build-tabs">
-            <button class="is-active" data-category="home"><span>🏡</span>Home</button>
-            <button data-category="food"><span>🍓</span>Harvest</button>
-            <button data-category="industry"><span>🛠️</span>Industry</button>
-            <button data-category="civic"><span>🏛️</span>Civic</button>
-            <button data-category="expansion"><span>🗺️</span>Expand</button>
-            <button data-category="beauty"><span>🌷</span>Beauty</button>
-          </div>
-        </div>
-        <div class="build-catalog-tools" id="build-catalog-tools">
-          <span>Chronological catalog</span>
-          <label for="build-era-filter">Era</label>
-          <select id="build-era-filter">
-            <option value="all">All eras</option>
-            <option value="available">Available now</option>
-            <option value="0">Era 0</option>
-            <option value="1">Era 1</option>
-            <option value="2">Era 2</option>
-            <option value="3">Era 3</option>
-            <option value="4">Era 4</option>
-            <option value="5">Era 5</option>
-            <option value="6">Era 6</option>
-            <option value="7">Era 7</option>
-            <option value="8">Era 8</option>
-            <option value="9">Era 9</option>
-          </select>
-        </div>
-        <div class="build-list" id="build-list"></div>
-      </section>
     </section>
   </main>
 

@@ -11,6 +11,9 @@
   const TILE_W = 72;
   const TILE_H = 36;
   const TAU = Math.PI * 2;
+  const LIFE_CYCLE_SPEED = 0.42;
+  const MIN_LIFESPAN_DAYS = 34;
+  const MAX_LIFESPAN_DAYS = 48;
   let W = 1040;
   let H = 680;
 
@@ -20,6 +23,8 @@
     victory: document.getElementById("screen-victory"),
     continueButton: document.getElementById("btn-continue"),
     name: document.getElementById("name-input"),
+    buildDock: document.getElementById("build-dock"),
+    buildDockToggle: document.getElementById("build-dock-toggle"),
     buildList: document.getElementById("build-list"),
     buildTitle: document.getElementById("build-category-title"),
     buildCatalogTools: document.getElementById("build-catalog-tools"),
@@ -110,6 +115,27 @@
     { name: "Glowgrid Modernity", society: "Civic Garden Metropolis", description: "Electric lights, hospitals, transit, apartments, and public services reach every district.", motto: "A bright window for every family.", world: "Streamlined glass civic halls and glowing transit lilies connect healthy green neighborhoods around the clock.", healthNote: "Hospitals make fatal illness rare, though seasonal Glowflu remains.", architecture: "Pastel Modern", accent: "#70b8ca", diseasePressure: 0.45, resource: "energy", resourceName: "Glow Energy", icon: "⚡", requirement: { population: 25, energy: 60, knowledge: 310 } },
     { name: "Crystalnet Age", society: "Living Information Commons", description: "Computers, automation, vaccine research, and crystal networks coordinate the entire marsh.", motto: "Knowledge flows like water.", world: "Responsive crystal towers adjust light, transit, farms, and medicine while every citizen can address the digital council.", healthNote: "Predictive clinics prevent most outbreaks before symptoms appear.", architecture: "Crystal Biotech", accent: "#898ce0", diseasePressure: 0.25, resource: "data", resourceName: "Crystal Data", icon: "💾", requirement: { population: 28, data: 75, knowledge: 400 } },
     { name: "Starleap Future", society: "Interpond Space Commonwealth", description: "Mossbell builds living rockets, trains astro-frogs, and carries wetland culture beyond the moonlit pond.", motto: "No pond is the edge of the sky.", world: "Lunar lily domes, stardust laboratories, and orbital gardens turn the old marsh into the heart of a gentle spacefaring civilization.", healthNote: "Bio-dome medicine is superb, but Starfade requires specialized care.", architecture: "Lunar Organic", accent: "#7773cb", diseasePressure: 0.35, resource: "stardust", resourceName: "Stardust", icon: "🚀", requirement: null },
+  ];
+
+  const ERA_HERITAGE = [
+    "Its builders followed remembered animal paths, tied every beam with hand-twisted reed, and left room for the traveling stories of the Willow Clans.",
+    "Claybank masons marked the walls with family ripples, while the Mudbank Council recorded its opening with a painted shell tablet.",
+    "Bellflower villagers raised it cooperatively, adding bright timber, communal benches, and a bell whose sound belongs to every nearby household.",
+    "Canal engineers aligned it with the city waterways, combining bog-iron fittings, copper rain chains, and the proud geometry of an independent pond-state.",
+    "Moonpetal guilds gave it heraldry, carved moonstone, and a public obligation to the Crown, though local families still insist the best entrance faces the old pond.",
+    "Renaissance designers filled it with roseglass, printed inscriptions, and small courtyards intended for argument, music, scientific sketches, and tea.",
+    "Steamfen workers built it around brass mechanisms and hard-won labor charters; every whistle pattern carries a different civic meaning.",
+    "Glowgrid planners connected it to clean energy, transit lilies, universal water service, and the metropolitan promise that no district should be left dark.",
+    "Crystalnet architects grew responsive walls around a civic memory seed, allowing the structure to learn seasonal light, traffic, and the needs of its visitors.",
+    "Starleap bio-builders shaped it from living lunar material, preserving a vial of Mossbell water inside so even the newest frontier remembers the first pond.",
+  ];
+
+  const DISTRICT_LORE = [
+    { name: "Northwillow Commons", description: "the oldest civic bank, shaded by willow roots and story lanterns" },
+    { name: "Dapplefen Ward", description: "a family district of winding paths, moss gardens, and tiny public squares" },
+    { name: "Moonwater Quays", description: "a lively canal quarter known for ferries, night markets, and reflected lights" },
+    { name: "Clovermead Borough", description: "a broad southern district of workshops, schools, orchards, and festival lawns" },
+    { name: "Amberreed March", description: "an outer province where new industries meet protected wetlands" },
   ];
 
   const DISEASES = [
@@ -413,7 +439,7 @@
       tradeHistory: [],
       healthHistory: [],
       actionCooldowns: { forage: 0, reeds: 0, clay: 0 },
-      government: { kind: "council", name: "Willow Circle", monarchId: null, heirId: null, dynastyName: "", legitimacy: 64, laws: [], cases: [], coronations: 0 },
+      government: { kind: "council", name: "Willow Circle", monarchId: null, heirId: null, dynastyName: "", legitimacy: 64, satisfaction: 64, unrest: 0, revolts: 0, lastRevoltDay: -99, laws: [], cases: [], coronations: 0 },
       justice: { incidents: [], totalIncidents: 0, rehabilitated: 0 },
       chronicle: [],
       nextFrogId: 1,
@@ -437,7 +463,8 @@
 
   function makeBuilding(id, x, y) {
     const definition = buildingDefinition(id);
-    return { id, x, y, footprint: [...(definition?.footprint || [1, 1])], level: 1, eraStyle: world?.era || 0, specialization: null, progress: 0, active: true, builtAt: Date.now() };
+    const constructionEra = definition?.era || 0;
+    return { id, x, y, footprint: [...(definition?.footprint || [1, 1])], level: 1, eraStyle: constructionEra, constructionEra, specialization: null, progress: 0, active: true, builtAt: Date.now(), builtDay: world?.day || 1 };
   }
 
   function spawnFrog(x, y, forcedName = null, family = null, origin = "arrival") {
@@ -473,7 +500,7 @@
       friendships: {},
       bond: 0,
       ageDays: origin === "grown" ? 3 : 18 + Math.floor(Math.random() * 13),
-      lifespanDays: 58 + Math.floor(Math.random() * 24),
+      lifespanDays: MIN_LIFESPAN_DAYS + Math.floor(Math.random() * (MAX_LIFESPAN_DAYS - MIN_LIFESPAN_DAYS + 1)),
       attributes: {
         strength: 35 + Math.floor(Math.random() * 61),
         intelligence: 35 + Math.floor(Math.random() * 61),
@@ -669,7 +696,7 @@
       frog.ageDays = (frog.ageDays || 0) + 1;
       updateEducation(frog, true);
       processHealthDay(frog);
-      const hospitalBonus = countBuilding("hospital") > 0 ? 10 : countBuilding("clinic") > 0 ? 4 : 0;
+      const hospitalBonus = countBuilding("hospital") > 0 ? 6 : countBuilding("clinic") > 0 ? 3 : 0;
       if (frog.healthDeath || frog.ageDays >= frog.lifespanDays + hospitalBonus) departed.push(frog);
     });
     departed.forEach((frog) => {
@@ -698,8 +725,9 @@
     const birthChance = 0.1 + countBuilding("nursery") * 0.05;
     const eligibleFamilies = [...new Set(world.frogs.map((frog) => frog.familyId))].filter((familyId) => familyMembers(familyId).length >= 2);
     if (totalPopulation() < housingCapacity() && eligibleFamilies.length && Math.random() < birthChance) birthTadpole(choose(eligibleFamilies));
-    processJusticeDay();
     refreshGovernment();
+    processMonarchyDay();
+    processJusticeDay();
     assignHomesAndJobs();
   }
 
@@ -962,6 +990,55 @@
     return world.frogs.find((frog) => frog.id === world.government?.heirId) || null;
   }
 
+  function royalCastle() {
+    let castle = null;
+    forEachTile((tile) => {
+      if (!castle && tile.building?.id === "castle") castle = tile.building;
+    });
+    return castle;
+  }
+
+  function monarchySatisfaction() {
+    if (!world?.frogs.length) return 100;
+    if (world.government.kind !== "monarchy") return Math.round(world.government.legitimacy || 64);
+    const openCases = (world.government.cases || []).filter((entry) => entry.status === "open").length;
+    const crowdingPenalty = Math.max(0, totalPopulation() - housingCapacity()) * 5;
+    const disasterPenalty = world.disaster ? world.disaster.type === "drought" ? 12 : 9 : 0;
+    const ruler = monarch();
+    const rulerBond = ruler ? Math.min(8, (ruler.bond || 0) * 0.8) : -14;
+    return Math.round(clamp(
+      harmony() * 0.42 + safety() * 0.2 + kingdomWellbeing() * 0.13 + (world.government.legitimacy || 0) * 0.25
+      + rulerBond - openCases * 2.2 - crowdingPenalty - disasterPenalty,
+      0,
+      100,
+    ));
+  }
+
+  function royalSentiment(satisfaction = monarchySatisfaction()) {
+    if (satisfaction >= 82) return "Beloved crown";
+    if (satisfaction >= 66) return "Content realm";
+    if (satisfaction >= 50) return "Divided court";
+    if (satisfaction >= 35) return "Restless districts";
+    return "Revolt danger";
+  }
+
+  function royalRevoltRisk(satisfaction = world.government.satisfaction ?? monarchySatisfaction()) {
+    const chaoticCitizens = world.frogs.filter((frog) => frog.disposition === "chaotic" && !isDetained(frog)).length;
+    const unrest = world.government.unrest || 0;
+    return Math.round(clamp(Math.max(0, 48 - satisfaction) * 0.9 + unrest * 0.35 + chaoticCitizens * 1.6, 0, 42));
+  }
+
+  function ensureRoyalResidence() {
+    if (world.government.kind !== "monarchy") return;
+    const ruler = monarch();
+    const castle = royalCastle();
+    if (!ruler || !castle) return;
+    ruler.home = { x: castle.x, y: castle.y };
+    ruler.workplace = { x: castle.x, y: castle.y };
+    ruler.role = "Crownkeeper";
+    ruler.title = "Crownkeeper";
+  }
+
   function chooseRoyalHeir(ruler = monarch()) {
     if (!ruler) return null;
     const family = world.frogs.filter((frog) => frog.id !== ruler.id && frog.familyId === ruler.familyId && !isDetained(frog));
@@ -978,10 +1055,13 @@
     world.government.dynastyName = ruler.familyName.replace(" Family", " Dynasty");
     world.government.coronations = (world.government.coronations || 0) + 1;
     world.government.legitimacy = Math.max(72, world.government.legitimacy || 0);
+    world.government.satisfaction = Math.max(68, world.government.satisfaction || 0);
+    world.government.unrest = 0;
     ruler.title = "Crownkeeper";
     const heir = chooseRoyalHeir(ruler);
     world.government.heirId = heir?.id || null;
     if (heir) heir.title = "Moonpetal Heir";
+    ensureRoyalResidence();
     addChronicle(`Crownkeeper ${ruler.name} was crowned`, `Every district sent one lantern to Moonpetal Castle. ${ruler.name} of the ${world.government.dynastyName} promised to guard the waterways, uphold gentle justice, and share power with the old Willow Circle.`);
     toast(`${ruler.name} became Crownkeeper of Mossbell`);
   }
@@ -998,7 +1078,62 @@
         world.government.heirId = next?.id || null;
         if (next) next.title = "Moonpetal Heir";
       }
+      ensureRoyalResidence();
     }
+  }
+
+  function processMonarchyDay() {
+    if (world.government.kind !== "monarchy" || !monarch() || !royalCastle()) return;
+    const currentSatisfaction = monarchySatisfaction();
+    world.government.satisfaction = lerp(world.government.satisfaction ?? currentSatisfaction, currentSatisfaction, 0.42);
+    const dissatisfaction = Math.max(0, 52 - world.government.satisfaction);
+    const recovery = world.government.satisfaction >= 62 ? 4 : 0;
+    world.government.unrest = clamp((world.government.unrest || 0) + dissatisfaction * 0.18 - recovery, 0, 100);
+    world.government.legitimacy = clamp(world.government.legitimacy + (world.government.satisfaction - 55) * 0.025, 0, 100);
+    const daysSinceRevolt = world.day - (world.government.lastRevoltDay || -99);
+    const risk = royalRevoltRisk(world.government.satisfaction);
+    if (daysSinceRevolt >= 8 && risk >= 8 && Math.random() < risk / 280) triggerRoyalRevolt();
+  }
+
+  function triggerRoyalRevolt() {
+    const ruler = monarch();
+    if (!ruler) return;
+    const eligible = world.frogs.filter((frog) => frog.id !== ruler.id && isAdult(frog) && !isDetained(frog));
+    if (!eligible.length) return;
+    const successor = [...eligible].sort((a, b) => {
+      const aDynastyPenalty = a.familyId === ruler.familyId ? 45 : 0;
+      const bDynastyPenalty = b.familyId === ruler.familyId ? 45 : 0;
+      return (b.attributes.strength + b.attributes.craftiness + b.joy + (b.bond || 0) * 2 - bDynastyPenalty)
+        - (a.attributes.strength + a.attributes.craftiness + a.joy + (a.bond || 0) * 2 - aDynastyPenalty);
+    })[0];
+    const casualties = [ruler];
+    if (world.frogs.length > 12 && Math.random() < 0.55) {
+      const additional = choose(world.frogs.filter((frog) => frog.id !== ruler.id && frog.id !== successor.id && isAdult(frog)));
+      if (additional) casualties.push(additional);
+    }
+    const casualtyIds = new Set(casualties.map((frog) => frog.id));
+    world.frogs = world.frogs.filter((frog) => !casualtyIds.has(frog.id));
+    world.frogs.forEach((frog) => {
+      if (["Crownkeeper", "Moonpetal Heir"].includes(frog.title)) frog.title = "";
+    });
+    world.government.monarchId = successor.id;
+    world.government.dynastyName = successor.familyName.replace(" Family", " Dynasty");
+    world.government.coronations = (world.government.coronations || 0) + 1;
+    world.government.revolts = (world.government.revolts || 0) + 1;
+    world.government.lastRevoltDay = world.day;
+    world.government.legitimacy = 54;
+    world.government.satisfaction = 56;
+    world.government.unrest = 10;
+    successor.title = "Crownkeeper";
+    successor.role = "Crownkeeper";
+    const heir = chooseRoyalHeir(successor);
+    world.government.heirId = heir?.id || null;
+    if (heir) heir.title = "Moonpetal Heir";
+    ensureRoyalResidence();
+    if (state.selected.type === "frog" && casualtyIds.has(state.selected.value?.id)) state.selected = { type: "building", value: royalCastle() };
+    const fallen = casualties.map((frog) => frog.name).join(" and ");
+    addChronicle("The Night of Broken Lanterns", `Public anger became a revolt at Moonpetal Castle. ${fallen} ${casualties.length === 1 ? "died" : "were lost"} in the struggle. The old dynasty ended, and ${successor.name} of the ${world.government.dynastyName} was crowned after promising open granaries, public audiences, and a gentler court.`);
+    toast(`Revolt: ${successor.name} became the new Crownkeeper`);
   }
 
   function handleSuccession(departed = null) {
@@ -1024,6 +1159,9 @@
     const heir = chooseRoyalHeir(successor);
     world.government.heirId = heir?.id || null;
     if (heir) heir.title = "Moonpetal Heir";
+    world.government.satisfaction = Math.max(58, world.government.satisfaction || 0);
+    world.government.unrest = Math.max(0, (world.government.unrest || 0) - 18);
+    ensureRoyalResidence();
     addChronicle(`The Moonpetal succession`, `${successor.name} succeeded ${previousName} as Crownkeeper. Bells sounded from the castle to the smallest ferry dock.`);
     toast(`${successor.name} inherited the Moonpetal Crown`);
   }
@@ -1207,7 +1345,7 @@
       world.actionCooldowns[action] = Math.max(0, world.actionCooldowns[action] - dt);
     });
 
-    world.hour += dt * 0.18;
+    world.hour += dt * LIFE_CYCLE_SPEED;
     if (world.hour >= 24) {
       world.hour -= 24;
       world.day += 1;
@@ -1550,10 +1688,12 @@
   function assignHomesAndJobs() {
     const homes = [];
     const jobs = [];
+    const ruler = monarch();
+    const castle = royalCastle();
     forEachTile((tile, x, y) => {
       if (!tile.building) return;
       const definition = buildingDefinition(tile.building.id);
-      if (definition?.capacity) homes.push({ x, y, id: definition.id, capacity: buildingCapacity(tile.building, definition), familyHome: Boolean(definition.familyHome), familyId: null, residents: [] });
+      if (definition?.capacity) homes.push({ x, y, id: definition.id, capacity: buildingCapacity(tile.building, definition), familyHome: Boolean(definition.familyHome), familyId: null, reservedFamilyId: definition.id === "castle" ? ruler?.familyId || null : null, residents: [] });
       if (definition?.job) jobs.push({ x, y, role: definition.job, building: definition.name });
     });
 
@@ -1565,7 +1705,11 @@
     });
     for (const [familyId, members] of families) {
       let waiting = [...members];
-      const sharedHomes = homes.filter((home) => home.familyHome && home.familyId === null).sort((a, b) => b.capacity - a.capacity);
+      const sharedHomes = homes.filter((home) => home.familyHome && home.familyId === null && (!home.reservedFamilyId || home.reservedFamilyId === familyId)).sort((a, b) => {
+        if (a.id === "castle" && familyId === ruler?.familyId) return -1;
+        if (b.id === "castle" && familyId === ruler?.familyId) return 1;
+        return b.capacity - a.capacity;
+      });
       for (const home of sharedHomes) {
         if (!waiting.length) break;
         home.familyId = familyId;
@@ -1597,6 +1741,14 @@
         frog.role = "Detained Citizen";
         return;
       }
+      if (frog.id === ruler?.id && castle) {
+        frog.role = "Crownkeeper";
+        frog.title = "Crownkeeper";
+        frog.jobPreference = undefined;
+        frog.workplace = { x: castle.x, y: castle.y };
+        occupiedJobs.add(`${castle.x},${castle.y}`);
+        return;
+      }
       frog.role = frog.id === world.frogs.find((citizen) => isAdult(citizen))?.id ? "Council Keeper" : "Neighbor";
       if (frog.jobPreference === null) {
         frog.role = "Neighbor";
@@ -1621,6 +1773,7 @@
       frog.role = job.role;
       occupiedJobs.add(`${job.x},${job.y}`);
     });
+    ensureRoyalResidence();
   }
 
   function triggerWorldEvent() {
@@ -1849,14 +2002,14 @@
       establishMonarchy();
     }
     refreshGovernment();
-    addChronicle(`${definition.name} opened`, buildingStory(definition.id));
+    addChronicle(`${definition.name} opened`, buildingStory(definition.id, tile.building));
     state.selected = { type: "building", value: tile.building };
     assignHomesAndJobs();
     toast(`${definition.name} built`);
     sound(390, 0.1, "triangle", 0.035, 180);
   }
 
-  function buildingStory(id) {
+  function buildingStory(id, building = null) {
     const stories = {
       mossnest: "The family tucked soft moss between every woven branch and hung a shell chime above the round doorway.",
       treetop: "The first rope bridge was tested by six frogs, three baskets, and one delighted tadpole at the same time.",
@@ -1939,7 +2092,7 @@
       medbay: "A bubble of regenerative moonwater healed the first astro-frog's travel-weary feet.",
       stage: "Musicians tuned acorn drums while fireflies practiced their entrance.",
       observatory: "Astronomers adjusted the pearl telescope until Saturn appeared in the moonpool.",
-      castle: "The lost Moonpetal stones fit together as though they had only been waiting.",
+      castle: "The lost Moonpetal stones fit together as though they had only been waiting. Guild banners rose above four public courtyards: the Petition Garden, the Lantern Kitchen, the Heirs' School, and the quiet Hall of Remembered Crowns. The newly chosen Crownkeeper moved into the royal apartments that evening.",
       monastery: "The Quiet Pond order lit seven floating candles and began copying the oldest songs in waterproof ink.",
       museum: "Families brought heirlooms from every era, including the first reed basket and the chipped cup from Mossbell's founding picnic.",
       railterminal: "The first Lilyline railboat arrived exactly on time, carrying schoolchildren, berry crates, and one extremely proud conductor.",
@@ -1955,7 +2108,18 @@
       lantern: "A patient glowfly family moved in before sunset.",
       shrine: "The moon returned to the old well's reflection for the first time in generations.",
     };
-    return stories[id] || "Mossbell gained a new place for stories to happen.";
+    if (stories[id]) return stories[id];
+    const definition = buildingDefinition(id);
+    const era = clamp(building?.constructionEra ?? definition?.era ?? 0, 0, ERAS.length - 1);
+    const district = building ? buildingDistrict(building) : DISTRICT_LORE[2];
+    const categoryStory = {
+      home: "Its first household placed a family lantern in every window and declared the shared doorstep open to neighbors.",
+      food: "Growers, cooks, and hungry children tested the first harvest together before sending a basket to the common pantry.",
+      industry: "Its makers signed a craft charter promising careful work, fair apprenticeships, and repairs before replacement.",
+      civic: "The opening assembly left one seat empty for future citizens whose needs the founders could not yet imagine.",
+      beauty: "Artists asked every district for one color, one memory, and one living plant, ensuring the place belonged to all Mossbell.",
+    }[definition?.category] || "Citizens gathered beneath fresh lanterns and began inventing traditions for the new place.";
+    return `${categoryStory} It became part of ${district.name}, ${district.description}. ${ERA_HERITAGE[era]}`;
   }
 
   function hostFestival() {
@@ -2091,7 +2255,8 @@
     const era = ERAS[currentEra()];
     world.resources[era.resource] = world.resources[era.resource] || 0;
     refreshGovernment();
-    addChronicle(`${era.name} began`, `${era.society} transformed Mossbell. ${era.description}`);
+    addChronicle(`${era.name} began`, `${era.society} transformed Mossbell. ${era.description} ${era.world} The new civic promise was: “${era.motto}”`);
+    addChronicle(`Customs of the ${era.name}`, `${ERA_HERITAGE[currentEra()]} ${era.healthNote} Builders may still construct older heritage designs at their original costs; only deliberate upgrades adopt the architecture of a later age.`);
     world.frogs.forEach((frog) => { frog.joy = clamp(frog.joy + 10, 0, 100); });
     renderBuildList();
     updateDom();
@@ -2251,16 +2416,25 @@
     }
     if (selected.type === "building" && selected.value) {
       const definition = buildingDefinition(selected.value.id);
-      ui.selectedLabel.textContent = "Building Notes";
+      const district = buildingDistrict(selected.value);
+      const constructionEra = clamp(selected.value.constructionEra ?? definition.era ?? 0, 0, ERAS.length - 1);
+      const isCastle = selected.value.id === "castle";
+      const ruler = monarch();
+      const satisfaction = isCastle ? Math.round(world.government.satisfaction ?? monarchySatisfaction()) : 0;
+      const revoltRisk = isCastle ? royalRevoltRisk(satisfaction) : 0;
+      ui.selectedLabel.textContent = isCastle ? "Moonpetal Royal Court" : "Building Notes";
       ui.selectedTitle.textContent = definition.name;
-      ui.selectedDescription.textContent = definition.description;
+      ui.selectedDescription.textContent = isCastle
+        ? `${definition.description} ${ruler ? `Crownkeeper ${ruler.name} of the ${world.government.dynastyName} rules and lives here.` : "The throne is awaiting a Crownkeeper."} Public feeling: ${royalSentiment(satisfaction).toLowerCase()} at ${satisfaction}% satisfaction. ${revoltRisk >= 18 ? "Lantern-watchers report dangerous revolutionary meetings in the outer districts." : "Court petitioners currently approach through the public moon garden."}`
+        : `${definition.description} Founded in ${district.name}, ${district.description}. ${ERA_HERITAGE[constructionEra]}`;
       const worker = world.frogs.find((frog) => frog.workplace?.x === selected.value.x && frog.workplace?.y === selected.value.y && !isDetained(frog));
       const residents = world.frogs.filter((frog) => frog.home?.x === selected.value.x && frog.home?.y === selected.value.y);
       const [siteWidth, siteHeight] = footprintOf(selected.value);
       const architecture = ERAS[clamp(selected.value.eraStyle || definition.era || 0, 0, 9)].architecture;
       const capacity = buildingCapacity(selected.value, definition);
       const specialization = specializationFor(selected.value);
-      ui.selectedStats.innerHTML = `<div>Level<br>${selected.value.level}</div><div>Site<br>${siteWidth}×${siteHeight} tiles</div><div>Architecture<br>${escapeHtml(architecture)}</div><div>Worker<br>${worker?.name || "Unstaffed"}</div>${worker ? `<div>Efficiency<br>${Math.round(staffedMultiplier(selected.value) * 100)}%</div>` : ""}${definition.capacity ? `<div>Residents<br>${residents.length}/${capacity}</div><div>Household<br>${residents[0]?.familyName || "Available"}</div>` : ""}${specialization ? `<div>Specialization<br>${escapeHtml(specialization.name)}</div>` : ""}${selected.value.id === "stage" ? `<button id="host-festival">Host Festival</button>` : ""}`;
+      const courtStats = isCastle ? `<div>Crownkeeper<br>${escapeHtml(ruler?.name || "Vacant throne")}</div><div>Monarchy<br>${satisfaction}% · ${escapeHtml(royalSentiment(satisfaction))}</div><div>Revolt risk<br>${revoltRisk}%</div><div>Dynastic revolts<br>${world.government.revolts || 0}</div><div>Dynasty<br>${escapeHtml(world.government.dynastyName || "Unfounded")}</div>` : "";
+      ui.selectedStats.innerHTML = `<div>Level<br>${selected.value.level}</div><div>Site<br>${siteWidth}×${siteHeight} tiles</div><div>Architecture<br>${escapeHtml(architecture)}</div><div>Heritage<br>Era ${constructionEra} · Day ${selected.value.builtDay || 1}</div><div>District<br>${escapeHtml(district.name)}</div><div>Worker<br>${worker?.name || "Unstaffed"}</div>${worker ? `<div>Efficiency<br>${Math.round(staffedMultiplier(selected.value) * 100)}%</div>` : ""}${definition.capacity ? `<div>Residents<br>${residents.length}/${capacity}</div><div>Household<br>${residents[0]?.familyName || "Available"}</div>` : ""}${specialization ? `<div>Specialization<br>${escapeHtml(specialization.name)}</div>` : ""}${courtStats}${selected.value.id === "stage" ? `<button id="host-festival">Host Festival</button>` : ""}`;
       if (definition.capacity) {
         const familyBabies = residents.length ? world.tadpoles.filter((tadpole) => tadpole.familyId === residents[0].familyId) : [];
         ui.buildingResidents.classList.remove("hide");
@@ -2284,6 +2458,16 @@
     ui.selectedTitle.textContent = "The Great Willow";
     ui.selectedDescription.textContent = "The oldest tree in Mossbell. The council gathers beneath its lanterns.";
     ui.selectedStats.innerHTML = `<div>Adult frogs<br>${world.frogs.length}</div><div>Tadpoles<br>${world.tadpoles.length}</div><div>Buildings<br>${buildingCount()}</div><div>Day<br>${world.day}</div>`;
+  }
+
+  function buildingDistrict(building) {
+    const centerX = building.x + footprintOf(building)[0] * 0.5;
+    const centerY = building.y + footprintOf(building)[1] * 0.5;
+    if (centerY < 7) return DISTRICT_LORE[0];
+    if (centerX < 9) return DISTRICT_LORE[1];
+    if (centerX > 21) return DISTRICT_LORE[4];
+    if (centerY > 16) return DISTRICT_LORE[3];
+    return DISTRICT_LORE[2];
   }
 
   function renderBuildingWorkerAssignment(building, worker) {
@@ -2492,8 +2676,10 @@
     const heir = royalHeir();
     const cases = (world.government.cases || []).filter((entry) => entry.status !== "resolved");
     const rogues = world.frogs.filter((frog) => frog.disposition === "chaotic" || isDetained(frog));
+    const satisfaction = world.government.kind === "monarchy" ? Math.round(world.government.satisfaction ?? monarchySatisfaction()) : Math.round(world.government.legitimacy);
+    const revoltRisk = world.government.kind === "monarchy" ? royalRevoltRisk(satisfaction) : 0;
     ui.councilModalTitle.textContent = governmentDisplayName();
-    ui.councilModalCopy.textContent = world.government.kind === "monarchy" ? `The ${world.government.dynastyName} shares the work of law, public service, succession, and justice with Mossbell's civic institutions.` : "The Willow Circle governs by consensus. Building Moonpetal Castle will begin a royal era with a living dynasty and line of succession.";
+    ui.councilModalCopy.textContent = world.government.kind === "monarchy" ? `The ${world.government.dynastyName} shares law and public service with Mossbell's institutions. The realm is currently a ${royalSentiment(satisfaction).toLowerCase()}, with ${satisfaction}% satisfaction and ${revoltRisk}% revolt risk.` : "The Willow Circle governs by consensus. Building Moonpetal Castle will begin a royal era with a living dynasty and line of succession.";
     const lawCards = REALM_LAWS.filter((law) => law.era <= currentEra()).map((law) => {
       const active = hasLaw(law.id);
       const affordable = canAfford({ cost: law.cost });
@@ -2503,6 +2689,9 @@
     ui.councilModalContent.innerHTML = `<div class="realm-overview">
       <div class="realm-stat"><span>Government</span><strong>${escapeHtml(governmentDisplayName())}</strong></div>
       <div class="realm-stat"><span>Public trust</span><strong>${Math.round(world.government.legitimacy)}%</strong></div>
+      <div class="realm-stat"><span>Royal satisfaction</span><strong>${world.government.kind === "monarchy" ? `${satisfaction}%` : "Council era"}</strong></div>
+      <div class="realm-stat"><span>Revolt risk</span><strong>${world.government.kind === "monarchy" ? `${revoltRisk}%` : "None"}</strong></div>
+      <div class="realm-stat"><span>Dynastic revolts</span><strong>${world.government.revolts || 0}</strong></div>
       <div class="realm-stat"><span>Justice rooms</span><strong>${detainedCitizens().length}/${justiceCapacity()}</strong></div>
       <div class="realm-stat"><span>Recorded cases</span><strong>${world.justice.totalIncidents || 0}</strong></div>
     </div>
@@ -2841,7 +3030,7 @@
     const drawer = drawers[building.id];
     if (drawer) drawer(building);
     else {
-      drawEraStructure(building);
+      drawDistinctEraStructure(building);
       drawInstitutionIdentity(building);
     }
     if (drawer && building.id !== "willow") drawEraArchitecturalDetails(building);
@@ -2900,6 +3089,167 @@
     ctx.fillStyle = `${color}cc`;
     ctx.beginPath(); ctx.moveTo(-23, -47); ctx.lineTo(-11, -42); ctx.lineTo(-23, -36); ctx.closePath(); ctx.fill();
     ctx.beginPath(); ctx.moveTo(23, -47); ctx.lineTo(11, -42); ctx.lineTo(23, -36); ctx.closePath(); ctx.fill();
+  }
+
+  function buildingVisualHash(id) {
+    let hash = 2166136261;
+    for (let index = 0; index < id.length; index += 1) {
+      hash ^= id.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0;
+  }
+
+  function buildingVisualProfile(building) {
+    const definition = buildingDefinition(building.id);
+    const hash = buildingVisualHash(building.id);
+    const colors = [ERAS[clamp(building.eraStyle ?? definition.era ?? 0, 0, 9)].accent, "#ee9fbc", "#77bda1", "#e0b665", "#8d82cf", "#6fb8c3", "#d68e78"];
+    return {
+      hash,
+      variant: hash % 6,
+      roof: (hash >>> 5) % 5,
+      detail: (hash >>> 9) % 5,
+      windows: 2 + ((hash >>> 13) % 4),
+      scaleX: [0.78, 0.94, 1.18, 0.88, 1.08, 1.25][hash % 6],
+      scaleY: [1.13, 0.88, 0.82, 1.22, 1.02, 0.9][hash % 6],
+      accent: colors[(hash >>> 17) % colors.length],
+      category: definition.category,
+    };
+  }
+
+  function drawDistinctEraStructure(building) {
+    const profile = buildingVisualProfile(building);
+    drawStructureAnnexes(profile);
+    ctx.save();
+    ctx.scale(profile.scaleX, profile.scaleY);
+    drawEraStructure(building);
+    ctx.restore();
+    drawSignatureRoofline(profile);
+    drawCategoryArchitecture(building, profile);
+  }
+
+  function drawStructureAnnexes(profile) {
+    ctx.save();
+    ctx.fillStyle = profile.accent;
+    ctx.strokeStyle = "rgba(255,255,255,.86)";
+    ctx.lineWidth = 1.8;
+    if (profile.variant === 0) {
+      for (const x of [-29, 29]) {
+        ctx.beginPath(); ctx.ellipse(x, -10, 14, 17, 0, 0, TAU); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "rgba(255,244,181,.88)"; ctx.beginPath(); ctx.arc(x, -13, 4, 0, TAU); ctx.fill();
+        ctx.fillStyle = profile.accent;
+      }
+    } else if (profile.variant === 1) {
+      roundedRect(-10, -78, 20, 72, 8); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-13, -75); ctx.lineTo(0, -94); ctx.lineTo(13, -75); ctx.closePath(); ctx.fill(); ctx.stroke();
+    } else if (profile.variant === 2) {
+      roundedRect(-44, -20, 88, 25, 8); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,.7)";
+      for (const x of [-33, -11, 11, 33]) { roundedRect(x - 4, -14, 8, 16, 3); ctx.fill(); }
+    } else if (profile.variant === 3) {
+      for (const x of [-27, 27]) {
+        roundedRect(x - 9, -62, 18, 66, 5); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x - 11, -59); ctx.lineTo(x, -76); ctx.lineTo(x + 11, -59); ctx.closePath(); ctx.fill(); ctx.stroke();
+      }
+    } else if (profile.variant === 4) {
+      ctx.beginPath(); ctx.arc(0, -22, 42, Math.PI, TAU); ctx.lineTo(42, 4); ctx.lineTo(-42, 4); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = "rgba(255,255,255,.54)";
+      for (const radius of [27, 35]) { ctx.beginPath(); ctx.arc(0, -21, radius, Math.PI + .18, TAU - .18); ctx.stroke(); }
+    } else {
+      roundedRect(-45, -35, 35, 40, 7); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = shadeColor(profile.accent, 18); roundedRect(10, -54, 32, 59, 9); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = "rgba(255,255,255,.7)"; ctx.beginPath(); ctx.moveTo(-8, -19); ctx.lineTo(13, -31); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawSignatureRoofline(profile) {
+    ctx.save();
+    ctx.strokeStyle = profile.accent;
+    ctx.fillStyle = profile.accent;
+    ctx.lineWidth = 2;
+    if (profile.roof === 0) {
+      for (const x of [-20, 0, 20]) {
+        ctx.beginPath(); ctx.moveTo(x, -56); ctx.lineTo(x, -69 - Math.abs(x) * .12); ctx.stroke();
+        ctx.beginPath(); ctx.arc(x, -71 - Math.abs(x) * .12, 3, 0, TAU); ctx.fill();
+      }
+    } else if (profile.roof === 1) {
+      ctx.beginPath(); ctx.ellipse(0, -56, 31, 8, 0, 0, TAU); ctx.stroke();
+      ctx.fillStyle = "rgba(255,246,167,.9)"; ctx.beginPath(); ctx.arc(Math.cos(state.time * .8) * 29, -56 + Math.sin(state.time * .8) * 7, 3, 0, TAU); ctx.fill();
+    } else if (profile.roof === 2) {
+      ctx.beginPath(); ctx.moveTo(-34, -43); ctx.quadraticCurveTo(0, -79, 34, -43); ctx.stroke();
+      for (const x of [-22, -8, 8, 22]) { ctx.beginPath(); ctx.arc(x, -57 - (22 - Math.abs(x)) * .45, 2.5, 0, TAU); ctx.fill(); }
+    } else if (profile.roof === 3) {
+      ctx.beginPath(); ctx.moveTo(0, -51); ctx.lineTo(0, -80); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(1, -78); ctx.lineTo(18, -71); ctx.lineTo(1, -64); ctx.closePath(); ctx.fill();
+    } else {
+      ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(0, -54, 13, Math.PI, TAU); ctx.stroke();
+      ctx.fillStyle = profile.accent; ctx.beginPath(); ctx.arc(0, -55, 4, 0, TAU); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawCategoryArchitecture(building, profile) {
+    const definition = buildingDefinition(building.id);
+    ctx.save();
+    if (profile.category === "home") {
+      ctx.fillStyle = "#806653";
+      const chimneyX = profile.detail % 2 ? -23 : 23;
+      roundedRect(chimneyX - 4, -52, 8, 29, 3); ctx.fill();
+      ctx.fillStyle = "#f49abd";
+      for (let i = 0; i < profile.windows; i += 1) {
+        const x = -24 + i * (48 / Math.max(1, profile.windows - 1));
+        ctx.beginPath(); ctx.arc(x, -8, 3, 0, TAU); ctx.fill();
+        ctx.fillStyle = i % 2 ? "#ffe58f" : "#f49abd";
+      }
+      ctx.strokeStyle = "#75a77f"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-30, -3); ctx.quadraticCurveTo(0, -13, 30, -3); ctx.stroke();
+    } else if (profile.category === "food") {
+      ctx.fillStyle = profile.accent;
+      roundedRect(-34, -22, 68, 9, 4); ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,.82)";
+      for (let x = -28; x <= 28; x += 14) { ctx.beginPath(); ctx.moveTo(x, -22); ctx.lineTo(x + 7, -13); ctx.lineTo(x + 14, -22); ctx.closePath(); ctx.fill(); }
+      for (const x of [-27, 27]) {
+        ctx.fillStyle = "#b47c5e"; roundedRect(x - 7, -6, 14, 10, 3); ctx.fill();
+        ctx.fillStyle = x < 0 ? "#ed719c" : "#9bcf72";
+        for (let i = 0; i < 3; i += 1) { ctx.beginPath(); ctx.arc(x - 4 + i * 4, -7 - (i % 2) * 2, 3, 0, TAU); ctx.fill(); }
+      }
+    } else if (profile.category === "industry") {
+      ctx.strokeStyle = profile.accent; ctx.lineWidth = 4;
+      for (const [index, x] of [-25, 25].entries()) {
+        ctx.save(); ctx.translate(x, -7); ctx.rotate(state.time * (index ? -.35 : .45));
+        ctx.beginPath();
+        for (let tooth = 0; tooth < 12; tooth += 1) {
+          const radius = tooth % 2 ? 8 : 11;
+          const angle = tooth * TAU / 12;
+          tooth ? ctx.lineTo(Math.cos(angle) * radius, Math.sin(angle) * radius) : ctx.moveTo(Math.cos(angle) * radius, Math.sin(angle) * radius);
+        }
+        ctx.closePath(); ctx.stroke(); ctx.restore();
+      }
+      ctx.strokeStyle = "#8b7472"; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(29, -15); ctx.lineTo(35, -48); ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,.48)";
+      for (let i = 0; i < 3; i += 1) { ctx.beginPath(); ctx.arc(35 + Math.sin(state.time + i) * 3, -54 - i * 8, 3 + i, 0, TAU); ctx.fill(); }
+    } else if (profile.category === "civic") {
+      ctx.fillStyle = "rgba(255,255,255,.82)";
+      for (const x of [-24, -8, 8, 24]) { roundedRect(x - 3, -31, 6, 34, 2); ctx.fill(); }
+      ctx.fillStyle = profile.accent; roundedRect(-34, -36, 68, 7, 3); ctx.fill();
+      ctx.strokeStyle = profile.accent; ctx.lineWidth = 2;
+      for (const x of [-37, 37]) {
+        ctx.beginPath(); ctx.moveTo(x, 2); ctx.lineTo(x, -49); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x, -48); ctx.lineTo(x + (x < 0 ? 12 : -12), -43); ctx.lineTo(x, -37); ctx.closePath(); ctx.fill();
+      }
+      ctx.fillStyle = "#fff1a4"; ctx.beginPath(); ctx.arc(0, -44, 5, 0, TAU); ctx.fill();
+    }
+    ctx.fillStyle = "rgba(255,255,255,.94)";
+    ctx.strokeStyle = profile.accent;
+    ctx.lineWidth = 1.6;
+    roundedRect(-13, -23, 26, 18, 6); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = profile.accent;
+    ctx.font = "12px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(definition.icon, 0, -14);
+    ctx.restore();
   }
 
   function drawEraStructure(building) {
@@ -4184,7 +4534,7 @@
       world.tradeHistory = Array.isArray(world.tradeHistory) ? world.tradeHistory : [];
       world.healthHistory = Array.isArray(world.healthHistory) ? world.healthHistory : [];
       world.actionCooldowns = { forage: 0, reeds: 0, clay: 0, ...world.actionCooldowns };
-      world.government = { kind: "council", name: "Willow Circle", monarchId: null, heirId: null, dynastyName: "", legitimacy: 64, laws: [], cases: [], coronations: 0, ...world.government };
+      world.government = { kind: "council", name: "Willow Circle", monarchId: null, heirId: null, dynastyName: "", legitimacy: 64, satisfaction: 64, unrest: 0, revolts: 0, lastRevoltDay: -99, laws: [], cases: [], coronations: 0, ...world.government };
       world.government.laws = Array.isArray(world.government.laws) ? world.government.laws : [];
       world.government.cases = Array.isArray(world.government.cases) ? world.government.cases : [];
       world.justice = { incidents: [], totalIncidents: 0, rehabilitated: 0, ...world.justice };
@@ -4214,7 +4564,9 @@
         const hadAttributes = Boolean(frog.attributes);
         frog.attributes = frog.attributes || randomAttributes();
         frog.ageDays = hadAttributes && Number.isFinite(frog.ageDays) ? frog.ageDays : 18 + Math.floor(Math.random() * 13);
-        frog.lifespanDays = Math.max(Number.isFinite(frog.lifespanDays) ? frog.lifespanDays : 0, 58 + Math.floor(Math.random() * 24));
+        frog.lifespanDays = Number.isFinite(frog.lifespanDays)
+          ? clamp(frog.lifespanDays, MIN_LIFESPAN_DAYS, MAX_LIFESPAN_DAYS)
+          : MIN_LIFESPAN_DAYS + Math.floor(Math.random() * (MAX_LIFESPAN_DAYS - MIN_LIFESPAN_DAYS + 1));
         frog.education ||= { elementary: true, highschool: frog.ageDays >= 18, university: false };
         frog.universityEligible ??= frog.attributes.intelligence >= 67 && frog.id % 4 !== 0;
         frog.task ||= "none";
@@ -4234,13 +4586,18 @@
       world.nextFamilyId = Math.max(world.nextFamilyId || 1, ...world.frogs.map((frog) => frog.familyId + 1));
       forEachTile((tile) => {
         if (!tile.building) return;
+        const definition = buildingDefinition(tile.building.id);
         tile.building.level = clamp(tile.building.level || 1, 1, 5);
         tile.building.specialization ||= null;
-        tile.building.eraStyle = Number.isInteger(tile.building.eraStyle) ? tile.building.eraStyle : Math.min(world.era, buildingDefinition(tile.building.id)?.era || 0);
+        tile.building.constructionEra = Number.isInteger(tile.building.constructionEra) ? tile.building.constructionEra : definition?.era || 0;
+        tile.building.eraStyle = tile.building.level === 1
+          ? tile.building.constructionEra
+          : Number.isInteger(tile.building.eraStyle) ? tile.building.eraStyle : tile.building.constructionEra;
+        tile.building.builtDay = Number.isFinite(tile.building.builtDay) ? tile.building.builtDay : 1;
       });
       migrateBuildingFootprints();
-      assignHomesAndJobs();
       refreshGovernment();
+      assignHomesAndJobs();
       return true;
     } catch {
       return false;
@@ -4345,6 +4702,12 @@
   }
 
   function selectAt(tileX, tileY) {
+    const building = buildingAt(tileX, tileY);
+    if (building) {
+      state.selected = building.id === "willow" ? { type: "willow", value: null } : { type: "building", value: building };
+      sound(260, 0.06, "triangle", 0.012, 40);
+      return;
+    }
     let nearest = null;
     let nearestDistance = 0.9;
     for (const frog of world.frogs) {
@@ -4368,8 +4731,7 @@
       selectTadpole(nearestTadpole);
       return;
     }
-    const building = buildingAt(tileX, tileY);
-    state.selected = building?.id === "willow" ? { type: "willow", value: null } : building ? { type: "building", value: building } : { type: "willow", value: null };
+    state.selected = { type: "willow", value: null };
   }
 
   function unlockAudio() {
@@ -4474,6 +4836,13 @@
       document.querySelectorAll("[data-category]").forEach((item) => item.classList.toggle("is-active", item === button));
       renderBuildList();
     });
+    ui.buildDockToggle.addEventListener("click", () => {
+      const collapsed = ui.buildDock.classList.toggle("is-collapsed");
+      stage.classList.toggle("build-tray-collapsed", collapsed);
+      ui.buildDockToggle.setAttribute("aria-expanded", String(!collapsed));
+      ui.buildDockToggle.setAttribute("aria-label", collapsed ? "Open building catalog" : "Minimize building catalog");
+      ui.buildDockToggle.title = collapsed ? "Open building catalog" : "Minimize building catalog";
+    });
     ui.buildEraFilter.addEventListener("change", () => {
       state.buildEraFilter = ui.buildEraFilter.value;
       state.selectedTool = null;
@@ -4493,6 +4862,13 @@
       ui.hint.classList.toggle("hide", !definition);
       const footprint = definition?.footprint || [1, 1];
       ui.hint.textContent = definition ? `${definition.name}: choose an empty ${footprint[0]}×${footprint[1]} ${definition.terrain === "any" ? "built" : definition.terrain} site` : "";
+      if (definition && window.innerWidth <= 820) {
+        ui.buildDock.classList.add("is-collapsed");
+        stage.classList.add("build-tray-collapsed");
+        ui.buildDockToggle.setAttribute("aria-expanded", "false");
+        ui.buildDockToggle.setAttribute("aria-label", "Open building catalog");
+        ui.buildDockToggle.title = "Open building catalog";
+      }
       renderBuildList();
     });
 
